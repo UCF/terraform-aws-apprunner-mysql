@@ -1,10 +1,10 @@
 variable "region" {
-  type = string
+  type    = string
   default = "us-east-1"
 }
 
 variable "cluster-name" {
-  type = string
+  type    = string
   default = "cm-cluster"
 }
 
@@ -17,11 +17,21 @@ variable "release_version" {
 }
 
 variable "min_node_count" {
-  type = number
+  type    = number
   default = 3
 }
 
-variable max_node_count" {
-  type = number
+variable "max_node_count" {
+  type    = number
   default = 9
+}
+
+variable "machine_type" {
+  type    = string
+  default = "t2.small"
+}
+
+variable "state_bucket" {
+  type    = string
+  default = "cm-state-bucket"
 }
