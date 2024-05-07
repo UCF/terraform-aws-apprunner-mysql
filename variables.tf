@@ -3,7 +3,7 @@ variable "region" {
   default = "us-east-1"
 }
 
-variable "cluster-name" {
+variable "cluster_name" {
   type    = string
   default = "cm-cluster"
 }
