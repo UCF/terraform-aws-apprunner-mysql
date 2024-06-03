@@ -1,7 +1,6 @@
 resource "aws_eks_cluster" "primary" {
   name     = var.cluster_name
   role_arn = aws_iam_role.control_plane.arn
-  version  = var.k8s_version
 
   vpc_config {
     security_group_ids = [aws_security_group.worker.id]
@@ -82,17 +81,17 @@ resource "aws_subnet" "worker" {
 }
 
 resource "aws_eks_node_group" "primary" {
-  cluster_name = aws_eks_cluster.primary.name
-  version = var.k8s_version
+  cluster_name    = aws_eks_cluster.primary.name
+  version         = var.k8s_version
   release_version = var.release_version
   node_group_name = "cm-apps"
-  node_role_arn = aws_iam_role.worker.arn
-  subnet_ids = aws_subnet.worker[*].id
-  instance_types = [var.machine_type]
+  node_role_arn   = aws_iam_role.worker.arn
+  subnet_ids      = aws_subnet.worker[*].id
+  instance_types  = [var.machine_type]
   scaling_config {
     desired_size = var.min_node_count
-    max_size = var.max_node_count
-    min_size = var.min_node_count
+    max_size     = var.max_node_count
+    min_size     = var.min_node_count
   }
   depends_on = [
     aws_iam_role_policy_attachment.worker,
@@ -152,7 +151,7 @@ resource "aws_route_table" "worker" {
 }
 
 resource "aws_route_table_association" "worker" {
-  count = 3
+  count          = 3
   subnet_id      = aws_subnet.worker[count.index].id
   route_table_id = aws_route_table.worker.id
 }
