@@ -60,10 +60,14 @@ variable "namespaces" {
 
 variable "db_identifier" {
   description = "The RDS Instance identifier"
-  default = "my-rds-instance"
+  default     = "my-rds-instance"
 }
 
 variable "db_name" {
+  description = "The database name"
+}
+
+variable "db_username" {
   description = "The database username"
 }
 
