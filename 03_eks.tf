@@ -7,6 +7,9 @@ module "eks" {
   subnet_ids = module.vpc.public_subnets
   vpc_id     = module.vpc.vpc_id
 
+  # Give Terraform admin access to the cluster
+  enable_cluster_creator_admin_permissions = true
+
   eks_managed_node_groups = {
     node_group = {
       desired_size = var.desired_capacity
