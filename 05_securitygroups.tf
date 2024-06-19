@@ -19,3 +19,16 @@ resource "aws_security_group" "eks_cluster" {
   }
 }
 
+resource "aws_security_group" "db_sg" {
+  name_prefix = "db-sg-"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
