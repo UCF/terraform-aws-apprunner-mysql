@@ -10,8 +10,13 @@ resource "aws_db_instance" "mysql" {
   password          = var.db_password
   port              = "3306"
 
-  db_subnet_group_name   = module.vpc.database_subnet_group
+  db_subnet_group_name   = aws_db_subnet_group.mysql-group.name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   publicly_accessible    = true
 
+}
+
+resource "aws_db_subnet_group" "mysql-group" {
+  name = "db_group"
+  subnet_ids = module.vpc.public_subnets 
 }
