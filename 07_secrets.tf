@@ -1,9 +1,9 @@
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name = "rds-mysql"
+  name = "rds-mysql-login"
 }
 
 data "aws_secretsmanager_secret_version" "db_credentials" {
-  secret_id = "arn:aws:secretsmanager:us-east-1:654654512735:secret:rds-mysql-84SD5b"
+  secret_id = aws_secretsmanager_secret.db_credentials.id
 }
 
 locals {
