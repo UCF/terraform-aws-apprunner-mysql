@@ -3,9 +3,12 @@
 ## Instructions
 
 ### Requirements
-Ensure you have OpenTofu installed with a version of at least 1.7
-Ensure you have Terragrunt installed (if using a Debian-based Linux, use the method with taking the binary from the Github Release file instead of using Homebrew)
-Ensure your AWS Access credentials are properly configured
+
+- Ensure you have OpenTofu installed with a version of at least 1.7 [here](https://opentofu.org/docs/intro/install/)
+
+- Ensure you have Terragrunt installed (if using a Debian-based Linux, use the method with taking the binary from the Github Release file instead of using Homebrew) [here](https://davidbegin.github.io/terragrunt/)=
+
+- Ensure your AWS Access credentials are properly configured
 
 ### Steps
 
