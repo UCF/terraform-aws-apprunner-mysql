@@ -17,6 +17,6 @@ resource "aws_db_instance" "mysql" {
 }
 
 resource "aws_db_subnet_group" "mysql-group" {
-  name = "db_group"
-  subnet_ids = module.vpc.public_subnets 
+  name       = "db_group"
+  subnet_ids = module.vpc.public_subnets
 }

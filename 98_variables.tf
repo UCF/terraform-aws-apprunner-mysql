@@ -4,7 +4,7 @@ variable "region" {
 }
 
 variable "vpc_cidr" {
-  type = string
+  type        = string
   description = "CIDR block for the VPC"
   default     = "10.0.0.0/16"
 }
@@ -16,13 +16,13 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  type = number
+  type        = number
   description = "EKS cluster version"
   default     = "1.30"
 }
 
 variable "desired_capacity" {
-  type = number
+  type        = number
   description = "Desired number of worker nodes"
   default     = 3
 }
@@ -42,22 +42,22 @@ variable "max_node_count" {
 variable "instance_type" {
   description = "EC2 instance type for worker nodes"
   default     = ["t2.small"]
-  type = list
+  type        = list(any)
 }
 
 variable "db_name" {
   description = "The database name"
-  type = string
+  type        = string
 }
 
 variable "db_username" {
   description = "The database username"
-  type = string
+  type        = string
 }
 
 variable "db_password" {
   description = "The database password"
-  type = string
+  type        = string
 }
 
 
