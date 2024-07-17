@@ -1,5 +1,4 @@
 resource "helm_release" "argocd" {
-  depends_on = [aws_eks_node_group.main]
   name = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart = "argo-cd"
