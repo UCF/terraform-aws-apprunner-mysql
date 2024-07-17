@@ -14,6 +14,7 @@ resource "aws_db_instance" "mysql" {
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   publicly_accessible    = true
 
+  skip_final_snapshot = true
 }
 
 resource "aws_db_subnet_group" "mysql-group" {
