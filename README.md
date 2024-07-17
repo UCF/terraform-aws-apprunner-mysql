@@ -1,8 +1,9 @@
 # Bootstrapped TofuGrunt Kubernetes
 
-## Instructions
+A system that creates an entire EKS cluster from scratch in Kubernetes. 
+Automatically creates the remote state backend
 
-### Requirements
+### Setup
 
 - Ensure you have OpenTofu installed with a version of at least 1.7 [here](https://opentofu.org/docs/intro/install/)
 
@@ -10,7 +11,7 @@
 
 - Ensure your AWS Access credentials are properly configured
 
-### Steps
+### Steps to create the infrastructure
 
 Clone the repo
 
@@ -20,16 +21,23 @@ Run `terragrunt plan` to see what the current infrastructure will likely build
 
 Run `terragrunt apply` to attempt to create that infrastructure
 
-Run `terragrunt destroy` to destroy the infrastructure.
-
 If you get an error saying something already exists, change the name of that thing in the code.
 
+### Steps to destroy the infrastructure
+
+Run `terragrunt destroy` to destroy the infrastructure.
+
+If the destruction does not work, attempt to delete the RDS instance manually in AWS and then try again.
+
+
 <!-- BEGIN_TF_DOCS -->
+# Terraform-docs for the repo
+
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.7 |
+| <a name="requirement_tofu"></a> [OpenTofu](#requirement\_opentofu) | ~> 1.7 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.31.0 |
 
