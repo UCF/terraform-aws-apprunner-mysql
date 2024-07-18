@@ -26,3 +26,6 @@ data "kubernetes_service" "argocd_server" {
   }
 }
 
+data "aws_eks_cluster_auth" "main" {
+  name = module.eks.cluster_name
+}
