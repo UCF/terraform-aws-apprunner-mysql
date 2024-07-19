@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name = "rds-mysql-entry-key"
+  name = "rds-mysql-entry-secret"
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {
