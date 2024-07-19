@@ -12,13 +12,13 @@ variable "vpc_cidr" {
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
-  default     = "cm-cluster"
+  default     = "cm-appfolio"
 }
 
 variable "cluster_version" {
   type        = number
   description = "EKS cluster version"
-  default     = "1.30"
+  default     = "1.29"
 }
 
 variable "desired_capacity" {
