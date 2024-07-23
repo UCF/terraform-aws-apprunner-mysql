@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name = "rds-mysql-entry-secret"
+  name = "rds-mysql-entry-${timestamp()}"
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {
