@@ -1,10 +1,11 @@
 locals {
   timestamp = timestamp()
+  cleanstamp = "${replace("${local.timestamp}", "/[- TZ:]/", "")}"
 } 
 
 
 resource "aws_iam_role" "eks_cluster" {
-  name = "eks-cluster-role-${local.timestamp}"
+  name = "eks-cluster-role-${local.cleanstamp}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -24,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
 }
 
 resource "aws_iam_role" "eks_node" {
-  name = "eks-node-role-${local.timestamp}"
+  name = "eks-node-role-${local.cleanstamp}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

@@ -18,7 +18,7 @@ resource "aws_db_instance" "mysql" {
 }
 
 resource "aws_db_subnet_group" "mysql-group" {
-  name       = "db_subnet_group_${local.timestamp}"
+  name       = "db_subnet_group_${local.cleanstamp}"
   subnet_ids = module.vpc.public_subnets
 }
 
