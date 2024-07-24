@@ -19,13 +19,4 @@ resource "helm_release" "argocd" {
   }
 }
 
-data "kubernetes_service" "argocd_server" {
-  metadata {
-    name      = "argocd-server"
-    namespace = helm_release.argocd.namespace
-  }
-}
 
-data "aws_eks_cluster_auth" "main" {
-  name = module.eks.cluster_name
-}
