@@ -1,9 +1,5 @@
 provider "aws" {
-  region = var.region
-}
-
-provider "kubernetes" {
-  host = module.eks.cluster_endpoint
+  region = var.primary_region
 }
 
 provider "helm" {
@@ -23,7 +19,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 5.17"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
