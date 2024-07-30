@@ -19,4 +19,30 @@ resource "helm_release" "argocd" {
   }
 }
 
+resource "helm_release" "announcements-dev" {
 
+  name = "announcements-dev"
+
+  repository = "https://ucf.github.io/UCF-Announcements-Django/"
+  chart = "./announcements"
+  namespace = "announcements-dev"
+
+  set {
+    name = "protocolHttp"
+    value = "true"
+  }
+
+}
+
+resource "helm_release" "announcements-qa" {
+
+  name = "announcements-qa"
+  repository = "https://ucf.github.io/UCF-Announcements-Django/"
+  chart = "./announcements"
+  namespace = "announcements-qa"
+
+  set {
+    name = "protocolHttp"
+    value = "true"
+  }
+}
