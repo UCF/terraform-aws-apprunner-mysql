@@ -67,4 +67,8 @@ variable "db_password" {
   type        = string
 }
 
-
+variable "namespaces" {
+  description = "Cluster namespaces"
+  type = list(string)
+  default = ["dev", "qa"]
+}

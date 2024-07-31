@@ -7,6 +7,12 @@ data "aws_eks_cluster" "cluster" {
   name = var.eks_cluster_name
 }
 
+resource "aws_cloudwatch_log_group" "container_cluster" {
+  name = "/aws/eks/${local.cluster_name/cluster"
+  retention_in_days = 7
+}
+
+
 resource "aws_eks_cluster" "main" {
   name = local.cluster_name
   role_arn = aws_iam_role.container_cluster.arn
@@ -65,11 +71,6 @@ resource "aws_eks_node_group" "main" {
   ]
 }
 
-resource "aws_cloudwatch_log_group" "container_cluster" {
-  name = "/aws/eks/${local.cluster_name}/cluster"
-  retention_in_days = 7
-}
-
 data "tls_certificate" "container_cluster_oidc" {
   url = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
@@ -96,4 +97,51 @@ data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
   }
 }
 
+resource "kubernetes_namespace" "main" {
+  for_each = {for k, v in var.namespaces: k=>v}
+  metadata {
+    name = each.value[0]
+    labels = {
+      name = each.value[0]
+    }
+  }
+}
 
+resource "kubernetes_service_account" "workload_identity" {
+  for_each = {for k, v in var.namespaces: k=>v}
+  metadata {
+    name = "${each.value[0]}_service_account"
+    namespace = each.value[0]
+    annotations = {
+      "eks.amazonaws.com/role-arn" = var.workload_identity_role
+    }
+  }
+}
+
+resource "helm_release" "csi_secrets_store" {
+  name = "csi-secrets-store"
+  repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+  namespace = "kube-system"
+  set {
+    name = "syncSecret.enabled"
+    value = "true"
+  }
+}
+
+resource "helm_release" "aws_secrets_provider" {
+  name = "secrets-provider-aws"
+  repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
+  chart = "secrets-store-csi-driver-provider-aws"
+  namespace = "kube-system"
+}
+
+resource "kubernetes_manifest" "secret_provider_class" {
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind = "SecretProviderClass"
+    metadata = {
+      name = "${var.application_name}-${var.environment_name}-secret-provider-class"
+    namespace = #TODO
+    }
+  }
+}
