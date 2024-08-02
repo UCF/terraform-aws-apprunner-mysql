@@ -19,13 +19,3 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   role       = aws_iam_role.container_cluster.name
 }
 
-data "aws_iam_policy_document" "container_node_group" {
-  statement {
-    sid     = "EKSNodeAssumeRole"
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-  }
-}
