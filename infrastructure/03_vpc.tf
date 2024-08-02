@@ -36,10 +36,6 @@ resource "aws_resourcegroups_group" "main" {
   }
 }
 
-data "aws_partition" "current" {}
-data "aws_caller_identity" "current" {}
-
-
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -51,7 +47,6 @@ resource "random_shuffle" "az" {
 
 locals {
   azs_random = random_shuffle.az.result
-  azs_slice  = slice(data.aws_availability_zones.available.names, 0, var.az_count)
 
   public_subnets = { for k, v in local.azs_random :
     k => {
@@ -65,5 +60,4 @@ locals {
       availability_zone = v
     }
   }
-  partition = data.aws_partition.current.partition
 }
