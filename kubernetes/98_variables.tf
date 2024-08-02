@@ -1,3 +1,8 @@
+variable "web_app_name" {
+  type = string
+  description = "Name of web application"
+}
+
 variable "primary_region" {
   type    = string
   description = "Primary region for account activity"

@@ -8,7 +8,7 @@ data "aws_eks_cluster" "cluster" {
 }
 
 resource "aws_cloudwatch_log_group" "container_cluster" {
-  name = "/aws/eks/${local.cluster_name/cluster"
+  name = "/aws/eks/${local.cluster_name}/cluster"
   retention_in_days = 7
 }
 
@@ -98,11 +98,10 @@ data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
 }
 
 resource "kubernetes_namespace" "main" {
-  for_each = {for k, v in var.namespaces: k=>v}
   metadata {
-    name = each.value[0]
+    name = var.namespace
     labels = {
-      name = each.value[0]
+      name = var.namespace
     }
   }
 }
@@ -138,10 +137,38 @@ resource "helm_release" "aws_secrets_provider" {
 resource "kubernetes_manifest" "secret_provider_class" {
   manifest = {
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
-    kind = "SecretProviderClass"
+    kind = "SecretProviderClass" 
+    
     metadata = {
       name = "${var.application_name}-${var.environment_name}-secret-provider-class"
-    namespace = #TODO
+      namespace = var.namespace
+    }
+
+    spec = {
+      provider = "aws"
+      parameters = {
+        objects = yamlencode([
+          {
+            objectName = "connection-string"
+            objectType = "secretsmanager"
+            objectVersionLabel = "AWSCURRENT"
+          }
+        ])
+      }
+      secretObjects = [
+        {
+          data = [
+            {
+              key = "connection-string"
+              objectName = "connection-string"
+            }
+          ]
+          secretName = "connection-string"
+          type = "Opaque"
+        }
+      ]
     }
   }
 }
+
+

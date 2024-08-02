@@ -18,10 +18,7 @@ resource "aws_secretsmanager_secret" "db_credentials" {
 
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {
   secret_id = aws_secretsmanager_secret.db_credentials.id
-  secret_string = jsonencode({
-    username = var.db_username
-    password = var.db_password
-  })
+  secret_string = random_password.db_credentials.result
 }
 
 resource "helm_release" "csi_secrets_store" {
@@ -36,7 +33,7 @@ resource "helm_release" "csi_secrets_store" {
   }
 }
 
-resource "helm_release" "aws_secrets_proviver" {
+resource "helm_release" "aws_secrets_provider" {
   name = "secrets-provider-aws"
   repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
   chart = "secrets-store-csi-driver-provider-aws"
