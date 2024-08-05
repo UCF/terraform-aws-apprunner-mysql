@@ -11,6 +11,12 @@ on:
         description: "Environment to run tests against"
         type: string
         required: true
+      workingdirectory:
+        description: "Working directory for tofu apply"
+        type: choice
+        options:
+        - ./infrastructure
+        - ./kubernetes  
 
 jobs:
 
@@ -29,7 +35,7 @@ jobs:
           BACKEND_BUCKET_NAME: ${{ vars.BACKEND_BUCKET_NAME }}
           BACKEND_REGION: ${{ vars.BACKEND_REGION }}
           BACKEND_KEY: ${{ github.event.inputs.application }}-${{ github.event.inputs.environment }}
-        working-directory: ${{ vars.WORKING_DIRECTORY }}
+        working-directory: ${{ github.event.inputs.workingdirectory }}
         run: |
           tofu init \
             -backend-config='bucket='$BACKEND_BUCKET_NAME \
