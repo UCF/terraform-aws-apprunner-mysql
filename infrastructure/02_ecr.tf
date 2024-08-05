@@ -12,7 +12,7 @@ resource "aws_ecr_repository" "main" {
 
   tags = {
     application = var.application_name
-    environment = var.envrionment_name
+    environment = var.environment_name
   }
 }
 
@@ -46,7 +46,7 @@ resource "aws_iam_group_policy" "ecr_image_pushers" {
 
 resource "aws_iam_group_membership" "ecr_image_pushers" {
   name  = "${var.application_name}-${var.environment_name}-ecr-image-push-membership"
-  users = var.ecr_image_pushers
+  users = ["chandra"]
   group = aws_iam_group.ecr_image_pushers.name
 }
 

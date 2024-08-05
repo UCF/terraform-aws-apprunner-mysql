@@ -36,6 +36,15 @@ resource "aws_eip" "nat" {
   for_each = local.private_subnets
 }
 
+resource "aws_subnet" "backend" {
+
+  for_each = local.private_subnets
+  
+  vpc_id = aws_vpc.main.id
+  availability_zone = each.value.availability_zone
+  cidr_block = each.value.cidr_block
+}
+
 resource "aws_nat_gateway" "nat" {
 
   for_each = local.private_subnets
@@ -45,7 +54,7 @@ resource "aws_nat_gateway" "nat" {
 
   depends_on = [
     aws_internet_gateway.main,
-    aws_eip.nat[each.key]
+    aws_eip.nat
   ]
 
 }

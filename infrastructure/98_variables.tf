@@ -31,3 +31,19 @@ variable "db_password" {
   type        = string
 }
 
+variable "cluster_name" {
+  description = "The name of the cluster"
+  type        = string
+  default = "cm-appfolio"
+}
+
+variable "application_name" {
+  description = "The name of the application"
+  type = string
+}
+
+variable "environment_name" {
+  description = "The name of the environment"
+  type = string
+}
+

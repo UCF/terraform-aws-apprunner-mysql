@@ -1,6 +1,6 @@
 resource "aws_security_group" "eks_cluster" {
   name        = "eks-cluster-sg"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = aws_vpc.main.id
   description = "Security group for EKS cluster control plane"
 
   ingress {
@@ -8,7 +8,7 @@ resource "aws_security_group" "eks_cluster" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [var.vpc_cidr]
+    cidr_blocks = [var.vpc_cidr_block]
   }
 
   egress {
@@ -21,7 +21,7 @@ resource "aws_security_group" "eks_cluster" {
 
 resource "aws_security_group" "db_sg" {
   name_prefix = "db-sg-"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = aws_vpc.main.id
 
   ingress {
     from_port   = 3306
