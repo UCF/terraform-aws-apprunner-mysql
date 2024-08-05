@@ -1,0 +1,41 @@
+name: Tofu-Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      application:
+        description: "Name of application to spin  up"
+        type: string
+        required: true
+      environment:
+        description: "Environment to run tests against"
+        type: string
+        required: true
+
+jobs:
+
+  tofu-plan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: opentofu/setup-opentofu@v1 
+
+      - id: plan
+        name: Tofu plan
+        env:
+          AWS_ACCESS_KEY_ID : ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BACKEND_BUCKET_NAME: ${{ vars.BACKEND_BUCKET_NAME }}
+          BACKEND_REGION: ${{ vars.BACKEND_REGION }}
+          BACKEND_KEY: ${{ github.event.inputs.application }}-${{ github.event.inputs.environment }}
+        working-directory: ${{ vars.WORKING_DIRECTORY }}
+        run: |
+          tofu init \
+            -backend-config='bucket='$BACKEND_BUCKET_NAME \
+            -backend-config='region='$BACKEND_REGION \
+            -backend-config='key='$BACKEND_KEY
+
+          tofu apply -target "random_shuffle.az" -auto-approve
+          tofu plan
+        
