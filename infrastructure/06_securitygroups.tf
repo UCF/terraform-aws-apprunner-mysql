@@ -31,4 +31,15 @@ resource "aws_security_group" "db_sg" {
   }
 }
 
+resource "aws_security_group" "cluster_nodes" {
+  name = "${var.application_name}-${var.environment_name}-cluster-nodes"
+  vpc_id = aws_vpc.main.id
 
+  egress {
+    from_port = 0
+    to_port = 0
+
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

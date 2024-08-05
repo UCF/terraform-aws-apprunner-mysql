@@ -9,6 +9,26 @@ resource "aws_subnet" "frontend" {
 
 }
 
+data "aws_subnets" "db_subnets" {
+  filter {
+    name = "vpc-id"
+    values = [aws_vpc.main.id]
+  }
+
+  depends_on = [
+    aws_vpc.main
+  ]
+}
+
+data "aws_subnet" "db_subnet" {
+  for_each = toset(data.aws_subnets.db_subnets.ids)
+  id = each.value
+
+  depends_on = [
+    data.aws_subnets.db_subnets
+  ]
+}
+
 resource "aws_route_table" "frontend" {
   vpc_id = aws_vpc.main.id
 

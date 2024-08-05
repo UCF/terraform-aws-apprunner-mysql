@@ -8,6 +8,9 @@ resource "aws_cloudwatch_log_group" "container_cluster" {
   retention_in_days = 7
 }
 
+data "aws_eks_cluster_auth" "main" {
+  name = local.cluster_name
+}
 
 resource "aws_eks_cluster" "main" {
   name                      = local.cluster_name
@@ -17,8 +20,7 @@ resource "aws_eks_cluster" "main" {
   vpc_config {
 
     security_group_ids = [
-      aws_security_group.cluster.id,
-      aws_security_group.cluster_nodes.id
+      aws_security_group.eks_cluster.id,
     ]
 
     subnet_ids              = local.cluster_subnet_ids
@@ -26,16 +28,16 @@ resource "aws_eks_cluster" "main" {
     endpoint_private_access = true
   }
 
+
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy,
-    aws_iam_role_policy_attachemetn.eks_vpc_controller_policy,
     aws_cloudwatch_log_group.container_cluster,
     aws_ecr_repository.main
   ]
 
   tags = {
-    application = var.applications_name
-    environment = var.envrionment_name
+    application = var.application_name
+    environment = var.environment_name
   }
 }
 
@@ -63,7 +65,6 @@ resource "aws_eks_node_group" "main" {
     aws_iam_role_policy_attachment.eks_worker_node_policy,
     aws_iam_role_policy_attachment.eks_cni_policy,
     aws_iam_role_policy_attachment.eks_ecr_policy,
-    aws_iam_role_policy_attachment.eks_cloudwatch_policy
   ]
 }
 
@@ -95,60 +96,23 @@ data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
 
 resource "kubernetes_namespace" "main" {
   metadata {
-    name = var.namespace
+    name = var.k8s_namespace
     labels = {
-      name = var.namespace
+      name = var.k8s_namespace
     }
   }
 }
 
 resource "kubernetes_service_account" "workload_identity" {
-  for_each = { for k, v in var.namespaces : k => v }
   metadata {
-    name      = "${each.value[0]}_service_account"
-    namespace = each.value[0]
+    name      = "${var.k8s_namespace}-service-account"
+    namespace = var.k8s_namespace
     annotations = {
-      "eks.amazonaws.com/role-arn" = var.workload_identity_role
+      "eks.amazonaws.com/role-arn" = aws_iam_policy.workload_identity.arn
     }
   }
 }
 
-resource "kubernetes_manifest" "secret_provider_class" {
-  manifest = {
-    apiVersion = "secrets-store.csi.x-k8s.io/v1"
-    kind       = "SecretProviderClass"
-
-    metadata = {
-      name      = "${var.application_name}-${var.environment_name}-secret-provider-class"
-      namespace = var.namespace
-    }
-
-    spec = {
-      provider = "aws"
-      parameters = {
-        objects = yamlencode([
-          {
-            objectName         = "connection-string"
-            objectType         = "secretsmanager"
-            objectVersionLabel = "AWSCURRENT"
-          }
-        ])
-      }
-      secretObjects = [
-        {
-          data = [
-            {
-              key        = "connection-string"
-              objectName = "connection-string"
-            }
-          ]
-          secretName = "connection-string"
-          type       = "Opaque"
-        }
-      ]
-    }
-  }
-}
 
 resource "aws_iam_policy" "workload_identity" {
 
@@ -162,3 +126,19 @@ resource "aws_iam_role" "workload_identity" {
   assume_role_policy = data.aws_iam_policy_document.workload_identity_assume_role_policy.json
   name               = "${var.application_name}-${var.environment_name}-workload-identity"
 }
+
+data "aws_iam_policy_document" "workload_identity_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+    ]
+    resources = [
+      "arn:aws:secretmanager:${var.primary_region}:${data.aws_caller_identity.current.account_id}:secret:*",
+    ]
+  }
+}
+
+data "aws_caller_identity" "current" {}
+

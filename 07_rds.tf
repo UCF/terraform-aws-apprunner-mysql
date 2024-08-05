@@ -19,7 +19,7 @@ resource "aws_db_instance" "mysql" {
 
 resource "aws_db_subnet_group" "mysql-group" {
   name       = "db_subnet_group"
-  subnet_ids = local.public_subnets
+  subnet_ids = data.aws_subnets.db_subnets.ids
 }
 
 

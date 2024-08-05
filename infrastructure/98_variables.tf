@@ -13,22 +13,7 @@ variable "vpc_cidr_block" {
 variable "az_count" {
   type        = number
   description = "Count for availability zones"
-  default     = 1
-}
-
-variable "db_name" {
-  description = "The database name"
-  type        = string
-}
-
-variable "db_username" {
-  description = "The database username"
-  type        = string
-}
-
-variable "db_password" {
-  description = "The database password"
-  type        = string
+  default     = 2 
 }
 
 variable "cluster_name" {
@@ -47,3 +32,22 @@ variable "environment_name" {
   type = string
 }
 
+variable "node_image_type" {
+  type = string
+  default = "AL2_x86_64"
+}
+
+variable "node_size" {
+  type = string
+  default = "t3.small"
+}
+
+variable "k8s_namespace" {
+  type = string
+  default = "app"
+}
+
+variable "k8s_service_account_name" {
+  type = string
+  default = "app-service-account"
+}

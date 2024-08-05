@@ -15,3 +15,11 @@ variable "namespace" {
   type        = string
   default     = "app"
 }
+
+variable "application_name" {
+  type = string
+}
+
+variable "environment_name" {
+  type = string
+}

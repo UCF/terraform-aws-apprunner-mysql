@@ -46,8 +46,10 @@ resource "aws_iam_group_policy" "ecr_image_pushers" {
 
 resource "aws_iam_group_membership" "ecr_image_pushers" {
   name  = "${var.application_name}-${var.environment_name}-ecr-image-push-membership"
-  users = ["chandra"]
+  users = [aws_iam_user.user.name]
   group = aws_iam_group.ecr_image_pushers.name
 }
 
-
+resource "aws_iam_user" "user" {
+  name = "Terraform"
+}

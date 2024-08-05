@@ -16,6 +16,12 @@ resource "aws_secretsmanager_secret" "db_credentials" {
   description = "Database connection string"
 }
 
+resource "random_password" "db_credentials"{
+  length = 16
+  special = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
 resource "aws_secretsmanager_secret_version" "db_credentials_version" {
   secret_id     = aws_secretsmanager_secret.db_credentials.id
   secret_string = random_password.db_credentials.result
