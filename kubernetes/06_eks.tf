@@ -1,32 +1,28 @@
 locals {
-  cluster_name = "eks-${var.application_name}-${var.environment_name}"
+  cluster_name       = "eks-${var.application_name}-${var.environment_name}"
   cluster_subnet_ids = [for subnet in values(aws_subnet.backend) : subnet.id]
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = var.eks_cluster_name
-}
-
 resource "aws_cloudwatch_log_group" "container_cluster" {
-  name = "/aws/eks/${local.cluster_name}/cluster"
+  name              = "/aws/eks/${local.cluster_name}/cluster"
   retention_in_days = 7
 }
 
 
 resource "aws_eks_cluster" "main" {
-  name = local.cluster_name
-  role_arn = aws_iam_role.container_cluster.arn
+  name                      = local.cluster_name
+  role_arn                  = aws_iam_role.container_cluster.arn
   enabled_cluster_log_types = ["api", "audit"]
 
   vpc_config {
-    
+
     security_group_ids = [
       aws_security_group.cluster.id,
       aws_security_group.cluster_nodes.id
     ]
 
-    subnet_ids = local.cluster_subnet_ids
-    endpoint_public_access = true
+    subnet_ids              = local.cluster_subnet_ids
+    endpoint_public_access  = true
     endpoint_private_access = true
   }
 
@@ -34,7 +30,7 @@ resource "aws_eks_cluster" "main" {
     aws_iam_role_policy_attachment.eks_cluster_policy,
     aws_iam_role_policy_attachemetn.eks_vpc_controller_policy,
     aws_cloudwatch_log_group.container_cluster,
-    aws_ecr_repository.main.*
+    aws_ecr_repository.main
   ]
 
   tags = {
@@ -45,22 +41,22 @@ resource "aws_eks_cluster" "main" {
 
 resource "aws_eks_node_group" "main" {
 
-  cluster_name = aws_eks_cluster.main.name
+  cluster_name    = aws_eks_cluster.main.name
   node_group_name = "ng-user"
-  node_role_arn = aws_iam_role.container_node_group.arn
-  subnet_ids = local.cluster_subnet_ids
-  
+  node_role_arn   = aws_iam_role.container_node_group.arn
+  subnet_ids      = local.cluster_subnet_ids
+
   scaling_config {
     desired_size = 3
-    min_size = 1
-    max_size = 4
+    min_size     = 1
+    max_size     = 4
   }
-  
+
   update_config {
     max_unavailable = 1
-  }  
+  }
 
-  ami_type = var.node_image_type
+  ami_type       = var.node_image_type
   instance_types = [var.node_size]
 
   depends_on = [
@@ -76,23 +72,23 @@ data "tls_certificate" "container_cluster_oidc" {
 }
 
 resource "aws_iam_openid_connect_provider" "container_cluster_oidc" {
-  client_id_list = ["sts.amazonaws.com"]
+  client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.container_cluster_oidc.certificates[0].sha1_fingerprint]
-  url = data.tls_certificate.container_cluster_oidc.url
+  url             = data.tls_certificate.container_cluster_oidc.url
 }
 
 data "aws_iam_policy_document" "workload_identity_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
-    effect = "Allow"
+    effect  = "Allow"
     condition {
-      test = "StringEquals"
+      test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.container_cluster_oidc.url, "https://", "")}:sub"
-      values = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
+      values   = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
     }
     principals {
       identifiers = [aws_iam_openid_connect_provider.container_cluster_oidc.arn]
-      type = "Federated"
+      type        = "Federated"
     }
   }
 }
@@ -107,9 +103,9 @@ resource "kubernetes_namespace" "main" {
 }
 
 resource "kubernetes_service_account" "workload_identity" {
-  for_each = {for k, v in var.namespaces: k=>v}
+  for_each = { for k, v in var.namespaces : k => v }
   metadata {
-    name = "${each.value[0]}_service_account"
+    name      = "${each.value[0]}_service_account"
     namespace = each.value[0]
     annotations = {
       "eks.amazonaws.com/role-arn" = var.workload_identity_role
@@ -117,30 +113,13 @@ resource "kubernetes_service_account" "workload_identity" {
   }
 }
 
-resource "helm_release" "csi_secrets_store" {
-  name = "csi-secrets-store"
-  repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
-  namespace = "kube-system"
-  set {
-    name = "syncSecret.enabled"
-    value = "true"
-  }
-}
-
-resource "helm_release" "aws_secrets_provider" {
-  name = "secrets-provider-aws"
-  repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
-  chart = "secrets-store-csi-driver-provider-aws"
-  namespace = "kube-system"
-}
-
 resource "kubernetes_manifest" "secret_provider_class" {
   manifest = {
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
-    kind = "SecretProviderClass" 
-    
+    kind       = "SecretProviderClass"
+
     metadata = {
-      name = "${var.application_name}-${var.environment_name}-secret-provider-class"
+      name      = "${var.application_name}-${var.environment_name}-secret-provider-class"
       namespace = var.namespace
     }
 
@@ -149,8 +128,8 @@ resource "kubernetes_manifest" "secret_provider_class" {
       parameters = {
         objects = yamlencode([
           {
-            objectName = "connection-string"
-            objectType = "secretsmanager"
+            objectName         = "connection-string"
+            objectType         = "secretsmanager"
             objectVersionLabel = "AWSCURRENT"
           }
         ])
@@ -159,16 +138,27 @@ resource "kubernetes_manifest" "secret_provider_class" {
         {
           data = [
             {
-              key = "connection-string"
+              key        = "connection-string"
               objectName = "connection-string"
             }
           ]
           secretName = "connection-string"
-          type = "Opaque"
+          type       = "Opaque"
         }
       ]
     }
   }
 }
 
+resource "aws_iam_policy" "workload_identity" {
 
+  name        = "${var.application_name}-${var.environment_name}-workload-identity"
+  description = "Policy for ${var.application_name}-${var.environment_name} Workload Identity"
+  policy      = data.aws_iam_policy_document.workload_identity_policy.json
+
+}
+
+resource "aws_iam_role" "workload_identity" {
+  assume_role_policy = data.aws_iam_policy_document.workload_identity_assume_role_policy.json
+  name               = "${var.application_name}-${var.environment_name}-workload-identity"
+}

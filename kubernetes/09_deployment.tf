@@ -1,14 +1,9 @@
 data "aws_caller_identity" "current" {}
 
-locals {
-  account_id = data.aws_caller_identity.current.account_id
-  container_registry = "${local.account_id}.dkr.ecr.${var.primary_region}.amazonaws.com/"
-}
-
 resource "kubernetes_deployment" "web_app" {
-  
+
   metadata {
-    name = "${var.application_name}-${var.environment_name}"
+    name      = "${var.application_name}-${var.environment_name}"
     namespace = var.namespace
   }
 
@@ -19,7 +14,7 @@ resource "kubernetes_deployment" "web_app" {
         app = "${var.application_name}-${var.environment_name}"
       }
     }
-    
+
     template {
       metadata {
         labels = {
@@ -31,13 +26,13 @@ resource "kubernetes_deployment" "web_app" {
         service_account_name = kubernetes_service_account.workload_identity.metadata[0].name
         container {
           image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.primary_region}.amazonaws.com/${var.web_app_image.name}:${var.web_app_image.version}"
-          name = var.application_name
+          name  = var.application_name
           port {
             containerPort = 8000
           }
           env_from {
             config_map_ref {
-              name = kubernetes_config_map.web_app.metadata.0.name
+              name = kubernetes_config_map.web_app.metadata[0].name
             }
           }
         }
@@ -50,18 +45,18 @@ resource "kubernetes_deployment" "web_app" {
     update = "5m"
     delete = "5m"
   }
-} 
+}
 
 resource "kubernetes_service" "web_app" {
   metadata {
-    name = "${var.application_name}-service"
+    name      = "${var.application_name}-service"
     namespace = var.namespace
   }
 
   spec {
     type = "ClusterIP"
     port {
-      port = 80
+      port        = 80
       target_port = 8000
     }
 
@@ -73,7 +68,7 @@ resource "kubernetes_service" "web_app" {
 
 resource "kubernetes_config_map" "web_app" {
   metadata {
-    name = "${var.application_name}-config"
+    name      = "${var.application_name}-config"
     namespace = var.namespace
   }
 

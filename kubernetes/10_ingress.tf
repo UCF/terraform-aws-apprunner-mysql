@@ -1,36 +1,36 @@
 resource "helm_release" "ingress" {
-  name = "ingress"
+  name       = "ingress"
   repository = "https://chart.bitnami.com/bitnami"
-  chart = "nginx-ingress-controller"
+  chart      = "nginx-ingress-controller"
 
   create_namespace = true
-  namespace = "ingress-nginx"
+  namespace        = "ingress-nginx"
 
   set {
-    name = "service.type"
+    name  = "service.type"
     value = "LoadBalancer"
   }
 
-  set { 
-    name = "service.annotation"
+  set {
+    name  = "service.annotation"
     value = "service.beta.kubernetes.io/aws-load-balancer-type: nlb"
   }
 }
 
 resource "kubernetes_ingress_v1" "ingress" {
   metadata {
-    name = "${var.application_name}-ingress"
+    name      = "${var.application_name}-ingress"
     namespace = var.namespace
     annotations = {
       "kubernetes.io/ingress.class" = "nginx"
     }
   }
-  
+
   spec {
     rule {
-      http { 
+      http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
 
           backend {
@@ -45,7 +45,7 @@ resource "kubernetes_ingress_v1" "ingress" {
       }
     }
   }
-  
+
   depends_on = [
     kubernetes_service.web_app,
     helm_release.ingress

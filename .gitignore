@@ -1,3 +1,6 @@
 /.terraform/*
+infrastructure/.terraform/*
+kubernetes/.terraform/*
+*.terraform*
 terraform.tfvars
 *.swp
