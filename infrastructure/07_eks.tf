@@ -3,12 +3,14 @@ locals {
   cluster_subnet_ids = [for subnet in values(aws_subnet.backend) : subnet.id]
 }
 
-resource "random_id" "cloudwatch" {
-  byte_length = 2
+resource "random_string" "cloudwatch" {
+  length = 8
+  special = true
+  override_special = "!@$%&"
 }
 
 resource "aws_cloudwatch_log_group" "container_cluster" {
-  name              = "/aws/eks/${local.cluster_name}-${random_id.cloudwatch.*.hex}/cluster"
+  name              = "/aws/eks/${local.cluster_name}-${random_string.cloudwatch}/cluster"
   retention_in_days = 7
 }
 
