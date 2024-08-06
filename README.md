@@ -15,19 +15,21 @@ Automatically creates the remote state backend
 
 Clone the repo
 
-Go into the "infrastructure" folder and type the following commands
+Go into the "infrastructure" folder and type the following commands. After typing `tofu apply` provide the name of the application in lower case (e.g., "announcements") and the environment in lower case (e.g., "dev")
 
 ```
+cd infrastructure
 tofu init
-tofu apply -target "random_shuffle.az"
-tofu apply
+tofu apply -target "random_shuffle.az" -target "aws_vpc.main" -auto-approve
+tofu apply -auto-approve
 ```
 
 Then go into the "kubernetes" folder and type the following commands
 
 ```
+cd ../kubernetes
 tofu init
-tofu apply
+tofu apply -auto-approve
 ```
 
 ### Steps to destroy the infrastructure
