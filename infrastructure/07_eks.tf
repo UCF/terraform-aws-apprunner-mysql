@@ -5,8 +5,7 @@ locals {
 
 resource "random_string" "cloudwatch" {
   length = 8
-  special = true
-  override_special = "!@$%&"
+  special = false
 }
 
 resource "aws_cloudwatch_log_group" "container_cluster" {
