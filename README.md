@@ -20,8 +20,8 @@ Go into the "infrastructure" folder and type the following commands. After typin
 ```
 cd infrastructure
 tofu init
-tofu apply -target "random_shuffle.az" -target "aws_vpc.main" -auto-approve
-tofu apply -auto-approve
+tofu apply -target "random_shuffle.az" -target "aws_vpc.main" e
+tofu apply 
 ```
 
 Then go into the "kubernetes" folder and type the following commands
@@ -29,7 +29,7 @@ Then go into the "kubernetes" folder and type the following commands
 ```
 cd ../kubernetes
 tofu init
-tofu apply -auto-approve
+tofu apply 
 ```
 
 ### Steps to destroy the infrastructure
