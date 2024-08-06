@@ -9,7 +9,7 @@ resource "random_string" "cloudwatch" {
 }
 
 resource "aws_cloudwatch_log_group" "container_cluster" {
-  name              = "/aws/eks/${local.cluster_name}-${random_string.cloudwatch}/cluster"
+  name              = "/aws/eks/${local.cluster_name}-${random_string.cloudwatch.result}/cluster"
   retention_in_days = 7
 }
 
