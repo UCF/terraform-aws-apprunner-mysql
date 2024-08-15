@@ -1,3 +1,6 @@
 /.terraform/*
 terraform.tfvars
 *.swp
+terratest_logs/
+infrastructure/.terraform/*
+infrastructure/terraform.tfvars
