@@ -1,0 +1,20 @@
+name: Infrastructure-Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to run tests against"
+        type: environment
+        required: true
+
+env:
+  TERRAFORM_VERSION: '1.5.7'
+
+jobs:
+
+  terraform-plan:
+    runs-on: ubuntu-latest
+    
+    envrionment:
+      name: ${{ github.event.inputs.environment }}

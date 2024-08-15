@@ -1,0 +1,75 @@
+variable "db_password" {
+  type        = string
+  sensitive   = true
+  description = "The password for the RDS instance"
+}
+
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "main" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1c"
+}
+
+resource "aws_subnet" "alternative" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1b"
+}
+
+resource "aws_db_subnet_group" "default" {
+  name       = "default-subnet-group"
+  subnet_ids = [aws_subnet.main.id, aws_subnet.alternative.id]
+}
+
+resource "aws_security_group" "rds_sg" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Replace with a more secure range
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_instance" "default" {
+  identifier           = "shared-rds-instance"
+  allocated_storage    = 20
+  engine               = "mysql"
+  instance_class       = "db.t3.micro"
+  username             = "admin"
+  password             = var.db_password
+  parameter_group_name = "default.mysql8.0"
+  skip_final_snapshot  = true
+  publicly_accessible  = true
+
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.default.name
+
+}
+
+
+resource "null_resource" "create_databases" {
+  for_each = { for combo in local.app_env_list : "${combo.app}-${combo.env}" => combo }
+
+  provisioner "local-exec" {
+    command = <<EOT
+    mysql -h ${aws_db_instance.default.endpoint} -uadmin -p${var.db_password} -e "CREATE DATABASE ${each.value.app}_${each.value.env}_db;"
+    EOT
+  }
+
+  depends_on = [aws_db_instance.default]
+}
+
