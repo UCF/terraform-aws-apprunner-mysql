@@ -86,7 +86,7 @@ resource "null_resource" "create_databases" {
 
   provisioner "local-exec" {
     command = <<EOT
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e "CREATE DATABASE ${each.value.app}_${each.value.env}_db;"
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e "CREATE DATABASE ${each.value.app}-${each.value.env};"
     EOT
   }
 
