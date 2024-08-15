@@ -7,6 +7,8 @@ variable "db_password" {
 
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+  enable_dns_support = true
+  enable_dns_hostnames = true
 }
 
 resource "aws_subnet" "main" {
@@ -44,6 +46,24 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+}
+
+resource "aws_route_table_association" "subnet_association" {
+  subnet_id      = aws_subnet.main.id
+  route_table_id = aws_route_table.public.id
+}
+
 resource "aws_db_instance" "default" {
   identifier           = "shared-rds-instance"
   allocated_storage    = 20
@@ -66,7 +86,7 @@ resource "null_resource" "create_databases" {
 
   provisioner "local-exec" {
     command = <<EOT
-    mysql -h ${aws_db_instance.default.endpoint} -uadmin -p${var.db_password} -e "CREATE DATABASE ${each.value.app}_${each.value.env}_db;"
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e "CREATE DATABASE ${each.value.app}_${each.value.env}_db;"
     EOT
   }
 
