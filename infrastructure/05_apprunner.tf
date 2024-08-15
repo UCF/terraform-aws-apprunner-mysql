@@ -5,6 +5,9 @@ resource "aws_apprunner_service" "app_services" {
 
   source_configuration {
     image_repository {
+      image_configuration {
+        port = "8000"
+      }
       image_identifier      = "654654512735.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
       image_repository_type = "ECR"
     }
@@ -17,15 +20,6 @@ resource "aws_apprunner_service" "app_services" {
   instance_configuration {
     cpu    = "1024"
     memory = "2048"
-  }
-
- health_check_configuration {
-    protocol           = "TCP"      # Can be HTTP or TCP
-    interval_seconds   = 10          # Time between health checks
-    timeout_seconds    = 20           # Time to wait for a health check response
-    healthy_threshold  = 3           # Number of consecutive health checks before considering the service healthy
-    unhealthy_threshold = 3          # Number of consecutive health checks before considering the service unhealthy
-    port               = 8000        # Port on which the health check is performed
   }
 
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.app_scaling.arn
