@@ -4,3 +4,5 @@ terraform.tfvars
 terratest_logs/
 infrastructure/.terraform/*
 infrastructure/terraform.tfvars
+apprunner/.terraform/*
+apprunner/terraform.tfvars
