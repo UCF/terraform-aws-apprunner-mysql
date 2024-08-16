@@ -27,4 +27,8 @@ Replace the URL in the middle with the proper endpoint of your database and repl
 
 10. Go to the apprunner folder (`cd ../apprunner`)
 
-11. Run `tofu init` and then `tofu apply` to set up the App Runner services
+11. Run `tofu init` and then `tofu apply` to set up the App Runner IAM
+
+12. Go to the service sub-folder (`cd /service`)
+
+13. Run 'tofu init' and then 'tofu apply' to set up the App Runner services

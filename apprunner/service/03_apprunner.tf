@@ -31,53 +31,6 @@ resource "aws_apprunner_service" "app_services" {
 
 }
 
-resource "aws_iam_role" "apprunner_role" {
-  name = "apprunner-access-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "build.apprunner.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      },
-    ]
-  })
-}
-
-
-resource "aws_iam_policy" "ecr_access_policy" {
-  name = "apprunner-ecr-access-policy"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:BatchCheckLayerAvailability"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow",
-        Action   = "ecr:GetAuthorizationToken",
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
-  role       = aws_iam_role.apprunner_role.name
-  policy_arn = aws_iam_policy.ecr_access_policy.arn
-}
-
 resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
   auto_scaling_configuration_name = "app-scaling-config"
 
