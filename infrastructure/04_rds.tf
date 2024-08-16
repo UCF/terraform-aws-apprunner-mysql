@@ -15,12 +15,14 @@ resource "aws_subnet" "main" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1c"
+  map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "alternative" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.2.0/24"
   availability_zone = "us-east-1b"
+  map_public_ip_on_launch = true
 }
 
 resource "aws_db_subnet_group" "default" {
@@ -68,14 +70,14 @@ resource "aws_db_instance" "default" {
   identifier           = "shared-rds-instance"
   allocated_storage    = 20
   engine               = "mysql"
+  engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   username             = "admin"
   password             = var.db_password
-  parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
   publicly_accessible  = true
 
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  vpc_security_group_ids = ["${aws_security_group.rds_sg.id}"]
   db_subnet_group_name   = aws_db_subnet_group.default.name
 
 }
@@ -86,7 +88,7 @@ resource "null_resource" "create_databases" {
 
   provisioner "local-exec" {
     command = <<EOT
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e "CREATE DATABASE ${each.value.app}-${each.value.env};"
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e "CREATE DATABASE ${each.value.app}_${each.value.env};"
     EOT
   }
 
