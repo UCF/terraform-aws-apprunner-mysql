@@ -66,8 +66,13 @@ resource "aws_route_table_association" "subnet_association" {
   route_table_id = aws_route_table.public.id
 }
 
+resource "aws_route_table_association" "subnet_association_alt" {
+  subnet_id = aws_subnet.alternative.id
+  route_table_id = aws_route_table.public.id
+}
+
 resource "aws_db_instance" "default" {
-  identifier           = "shared-rds-instance"
+  identifier           = "cm-appfolio-db"
   allocated_storage    = 20
   engine               = "mysql"
   engine_version       = "8.0"
