@@ -31,4 +31,4 @@ Replace the URL in the middle with the proper endpoint of your database and repl
 
 12. Go to the service sub-folder (`cd service`)
 
-13. Run 'tofu init' and then 'tofu apply' to set up the App Runner services
+13. Run `tofu init` and then `tofu apply` to set up the App Runner services

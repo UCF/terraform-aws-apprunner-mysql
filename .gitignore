@@ -6,3 +6,5 @@ infrastructure/.terraform/*
 infrastructure/terraform.tfvars
 apprunner/.terraform/*
 apprunner/terraform.tfvars
+**/.terraform/*
+**/terraform.tfvars
