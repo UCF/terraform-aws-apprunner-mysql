@@ -29,4 +29,6 @@ Replace the URL in the middle with the proper endpoint of your database and repl
 
 11. Copy the output value within the quotes and go to the service sub-folder (`cd service`)
 
-12. Run `tofu init` and then `tofu apply` to set up the App Runner services, paste the copied output into the variable 
+12. Run `tofu init` and then `tofu apply` to set up the App Runner services, paste the copied output into the variable
+
+13. When a change is made to the application code, go to App Runner and click the deploy button in the application of choice in order to have the container loaded into the environment 
