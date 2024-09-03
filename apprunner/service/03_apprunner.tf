@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 resource "aws_apprunner_service" "app_services" {
   for_each = { for combo in local.app_env_list : "${combo.app}-${combo.env}" => combo }
 
@@ -8,7 +10,7 @@ resource "aws_apprunner_service" "app_services" {
       image_configuration {
         port = "8000"
       }
-      image_identifier      = "654654512735.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
+      image_identifier      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
       image_repository_type = "ECR"
     }
 
