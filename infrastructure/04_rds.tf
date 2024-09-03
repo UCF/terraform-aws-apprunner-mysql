@@ -6,22 +6,22 @@ variable "db_password" {
 
 
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-  enable_dns_support = true
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
   enable_dns_hostnames = true
 }
 
 resource "aws_subnet" "main" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1c"
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "us-east-1c"
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "alternative" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1b"
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "us-east-1b"
   map_public_ip_on_launch = true
 }
 
@@ -67,20 +67,20 @@ resource "aws_route_table_association" "subnet_association" {
 }
 
 resource "aws_route_table_association" "subnet_association_alt" {
-  subnet_id = aws_subnet.alternative.id
+  subnet_id      = aws_subnet.alternative.id
   route_table_id = aws_route_table.public.id
 }
 
 resource "aws_db_instance" "default" {
-  identifier           = "cm-appfolio-db"
-  allocated_storage    = 20
-  engine               = "mysql"
-  engine_version       = "8.0"
-  instance_class       = "db.t3.micro"
-  username             = "admin"
-  password             = var.db_password
-  skip_final_snapshot  = true
-  publicly_accessible  = true
+  identifier          = "cm-appfolio-db"
+  allocated_storage   = 20
+  engine              = "mysql"
+  engine_version      = "8.0"
+  instance_class      = "db.t3.micro"
+  username            = "admin"
+  password            = var.db_password
+  skip_final_snapshot = true
+  publicly_accessible = true
 
   vpc_security_group_ids = ["${aws_security_group.rds_sg.id}"]
   db_subnet_group_name   = aws_db_subnet_group.default.name

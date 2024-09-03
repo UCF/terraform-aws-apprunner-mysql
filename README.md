@@ -3,7 +3,7 @@
 
 ## Instructions
 
-1. Ensure you are authenticated to your AWS account and have MySQL and OpenTofu installed on your command line
+1. Ensure you are authenticated to your AWS account and have MySQL, OpenTofu, and Terragrunt installed on your command line
 
 a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys"
 
@@ -11,13 +11,15 @@ b. To install MySQL, see the following document: https://downloads.mysql.com/doc
 
 c. To install OpenTofu, see: https://opentofu.org/docs/intro/install/
 
+d. To install Terragrunt, see: https://davidbegin.github.io/terragrunt/
+
 2. Clone the Repository
 
 3. Go to the infrastructure folder (`cd infrastructure`) 
 
 4. Download `terraform.tfvars` from SecretServer and place it in that folder
 
-5. Run `tofu init` and then `tofu apply`
+5. Run `terragrunt init` and then `terragrunt apply`
 
 6. Check the configuration and confirm the infrastructure before typing 'yes' (If the apply succeeded, everything except for the App Runner services and the containers in the ECR repository will have been created)
 
@@ -31,10 +33,10 @@ Replace the URL in the middle with the proper endpoint of your database and repl
 
 9. Go to the apprunner folder (`cd ../apprunner`)
 
-10. Run `tofu init` and then `tofu apply` to set up the App Runner IAM
+10. Run `terragrunt init` and then `terragrunt apply` to set up the App Runner IAM
 
-11. Copy the output value within the quotes and go to the service sub-folder (`cd service`)
+11. Go to the service sub-folder (`cd service`)
 
-12. Run `tofu init` and then `tofu apply` to set up the App Runner services, paste the copied output into the variable
+12. Run `terragrunt init` and then `terragrunt apply` to set up the App Runner services, paste the copied output into the variable
 
 13. When a change is made to the application code, go to App Runner and click the deploy button in the application of choice in order to have the container loaded into the environment 
