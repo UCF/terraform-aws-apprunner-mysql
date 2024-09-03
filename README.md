@@ -5,6 +5,12 @@
 
 1. Ensure you are authenticated to your AWS account and have MySQL and OpenTofu installed on your command line
 
+a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys"
+
+b. To install MySQL, see the following document: https://downloads.mysql.com/docs/mysql-installation-excerpt-8.0-en.pdf
+
+c. To install OpenTofu, see: https://opentofu.org/docs/intro/install/
+
 2. Clone the Repository
 
 3. Go to the infrastructure folder (`cd infrastructure`) 
