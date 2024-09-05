@@ -39,3 +39,4 @@ Replace the URL in the middle with the proper endpoint of your database and repl
 
 12. Run `terragrunt init` and then `terragrunt apply` to set up the App Runner services, paste the copied output into the variable
 
+13. To destroy the infrastructure, go to each folder in reverse (service, apprunner, then infrastructure) and type `terragrunt destroy` 
