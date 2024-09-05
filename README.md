@@ -5,7 +5,7 @@
 
 1. Ensure you are authenticated to your AWS account and have MySQL, OpenTofu, and Terragrunt installed on your command line
 
-a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys"
+a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys" and copying the exported credentials into your terminal
 
 b. To install MySQL, see the following document: https://downloads.mysql.com/docs/mysql-installation-excerpt-8.0-en.pdf
 
@@ -39,4 +39,3 @@ Replace the URL in the middle with the proper endpoint of your database and repl
 
 12. Run `terragrunt init` and then `terragrunt apply` to set up the App Runner services, paste the copied output into the variable
 
-13. When a change is made to the application code, go to App Runner and click the deploy button in the application of choice in order to have the container loaded into the environment 
