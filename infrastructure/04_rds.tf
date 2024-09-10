@@ -84,7 +84,7 @@ resource "aws_db_instance" "default" {
   
   deletion_protection = false
   skip_final_snapshot = true
-  final_snapshot_identifier = "db_snapshot"
+  final_snapshot_identifier = "db-snapshot"
   
   // snapshot_identifier = 
 
