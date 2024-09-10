@@ -79,8 +79,14 @@ resource "aws_db_instance" "default" {
   instance_class      = "db.t3.micro"
   username            = "admin"
   password            = var.db_password
-  skip_final_snapshot = true
+  
   publicly_accessible = true
+  
+  deletion_protection = false
+  skip_final_snapshot = true
+  final_snapshot_identifier = "db_snapshot"
+  
+  // snapshot_identifier = 
 
   vpc_security_group_ids = ["${aws_security_group.rds_sg.id}"]
   db_subnet_group_name   = aws_db_subnet_group.default.name
