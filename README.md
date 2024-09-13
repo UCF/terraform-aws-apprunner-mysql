@@ -25,7 +25,7 @@ d. To install Terragrunt, see: https://davidbegin.github.io/terragrunt/
 
 6.1 Add the data to the database with a command like
 
-`mysql -h <url> -u <username> -P 3306 -p <database_name> > <sqlfile>`
+`mysql -h <host> -u <username> -P 3306 -p <database_name> < <sqlfile>`
 
 7. It is now necessary to push a container image to the ECR repository with the correct database url attached. To do so, change the `[ENV]_DATABASE_URL` secret in the app's Github Actions secret to a string of the form:
 
@@ -45,9 +45,9 @@ Replace the URL in the middle with the proper endpoint of your database and repl
 
 13. To destroy the infrastructure, go to each folder in reverse (service, apprunner, then infrastructure) and type `terragrunt destroy` 
 
-## Backup Procedure
+## Restore Snapshot Procedure
 
-To restore an RDS instance from a specific snapshot, you will need to specify the actual snapshot identifier associated with the desired snapshot in your AWS account. The snapshot identifier is a unique identifier assigned to each snapshot created for your RDS instances.
+To restore an RDS instance from a specific snapshot, you will need to specify the snapshot identifier associated with the desired snapshot in your AWS account. The snapshot identifier is a unique identifier assigned to each snapshot created for your RDS instances.
 
 To obtain the actual snapshot identifier, you can follow these steps:
 
