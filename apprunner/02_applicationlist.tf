@@ -1,11 +1,11 @@
 variable "applications" {
   type    = list(string)
-  default = ["announcements"]
+  default = ["announcements", "template"]
 }
 
 variable "environments" {
   type    = list(string)
-  default = ["dev", "qa", "prod"]
+  default = ["dev", "qa"]
 }
 
 locals {
