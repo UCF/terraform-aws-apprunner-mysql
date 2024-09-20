@@ -41,3 +41,10 @@ resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
   min_size        = 1
 }
 
+resource "aws_apprunner_custom_domain_association" "domains" {
+  for_each = { for combo in local.app_env_list : "${combo.app}-${combo.env}" => combo }
+
+  domain_name = "${each.value.app}-${each.value.env}.cm.ucf.edu"
+  service_arn = aws_apprunner_service.app_services[each.key].arn
+
+}
