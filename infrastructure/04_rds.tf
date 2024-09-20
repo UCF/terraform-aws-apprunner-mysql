@@ -4,6 +4,10 @@ variable "db_password" {
   description = "The password for the RDS instance"
 }
 
+locals {
+  timestamp = "${timestamp()}"
+  timestamp_sanitized = "${replace("${local.timestamp}", "/[-| |T|Z|:]/", "")}"
+}
 
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
@@ -83,16 +87,16 @@ resource "aws_db_instance" "default" {
   publicly_accessible = true
   
   deletion_protection = false
-  skip_final_snapshot = true
-  final_snapshot_identifier = "db-snapshot"
+  skip_final_snapshot = false
+  final_snapshot_identifier = "db-snapshot-${local.timestamp_sanitized}"
   
-  // snapshot_identifier = 
+  snapshot_identifier = "test"
 
   vpc_security_group_ids = ["${aws_security_group.rds_sg.id}"]
   db_subnet_group_name   = aws_db_subnet_group.default.name
 
   backup_retention_period = 7
-  backup_window = "03:00-04:00"
+  backup_window = "12:45-01:15"
   maintenance_window = "sun:05:00-sun:06:00"
 
 }
