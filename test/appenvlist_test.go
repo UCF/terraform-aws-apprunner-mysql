@@ -8,8 +8,6 @@ import (
 )
 
 func TestAppEnvListFlattening(t *testing.T) {
-	t.Parallel()
-
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../modules/appenvlist",
 
