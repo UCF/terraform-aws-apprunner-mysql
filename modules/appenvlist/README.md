@@ -1,3 +1,8 @@
+# AWS Application-Environment List Flattener
+
+This folder contains an OpenTofu module that defines a combined list of applications and environments to be input to other modules for defining required app-environment combinations. 
+
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
