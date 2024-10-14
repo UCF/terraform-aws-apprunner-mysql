@@ -1,5 +1,17 @@
+terraform {
+	required_version = ">=1.9"
+}
+
+provider "aws" {
+	region = "us-east-1"
+}
+
+
 module "appenvlist" {
 	source = "../appenvlist"
+
+	applications = var.applications
+	environments = var.environments
 }
 
 resource "aws_ecr_repository" "app_repos" {
