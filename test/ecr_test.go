@@ -2,37 +2,42 @@ package test
 
 import (
 	"testing"
+	"path/filepath"	
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestECRCreation(t *testing.T) {
 	t.Parallel()
 
-	appEnvOptions := &terraform.Options{
-		TerraformDir: "../modules/appenvlist",
+	tempTestFolder := filepath.Join(".", "/stages")
 
-		Vars: map[string]interface{}{
-			"applications": []string{
-				"announcements", "template",
+	defer test_structure.RunTestStage(t, "teardown_ecr_module", func() {
+	
+		ecrOptions := test_structure.LoadTerraformOptions(t, tempTestFolder)
+		terraform.Destroy(t, ecrOptions)
+	})
+
+	test_structure.RunTestStage(t, "deploy_ecr_module", func() {
+	
+		ecrOptions := &terraform.Options{
+			TerraformDir: "../modules/ecr",
+			Vars: map[string]interface{}{
+				"applications": []string{
+                                        "announcements", "template",
+                                },
+                                "environments": []string{
+                                        "dev", "test",
+                                },
 			},
-			"environments": []string{
-				"dev", "test",
-			},
-		},
-	}
+		}
 
-	defer terraform.Destroy(t, appEnvOptions)
-	terraform.InitAndApply(t, appEnvOptions)
+	test_structure.SaveTerraformOptions(t, tempTestFolder, ecrOptions)	
 
-	ecrOptions := &terraform.Options{
-		TerraformDir: "../modules/ecr",
-	}
-
-	defer terraform.Destroy(t, ecrOptions)
 	terraform.InitAndApply(t, ecrOptions)
-
+	
 	actualRepoNames := terraform.OutputList(t, ecrOptions, "ecr_repo_names")
 
 	expectedRepoNames := []string{
@@ -43,5 +48,5 @@ func TestECRCreation(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedRepoNames, actualRepoNames, "The ECR repository names are incorrect.")
-
+	})
 }
