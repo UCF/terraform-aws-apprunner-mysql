@@ -7,5 +7,3 @@ variable "environments" {
   type        = list(string)
   description = "A list of environments required for each application"
 }
-
-

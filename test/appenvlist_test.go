@@ -8,7 +8,7 @@ import (
 )
 
 func TestAppEnvListFlattening(t *testing.T) {
-  
+
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../modules/appenvlist",
 
@@ -52,7 +52,7 @@ func TestLargerAppEnvListFlattening(t *testing.T) {
 			},
 		},
 	}
-	
+
 	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApply(t, terraformOptions)
 
@@ -66,11 +66,11 @@ func TestLargerAppEnvListFlattening(t *testing.T) {
 		"map[app:template env:test]",
 		"map[app:template env:prod]",
 		"map[app:events env:dev]",
-                "map[app:events env:test]",
-                "map[app:events env:prod]",
-                "map[app:herald env:dev]",
-                "map[app:herald env:test]",
-                "map[app:herald env:prod]", 
+								"map[app:events env:test]",
+								"map[app:events env:prod]",
+								"map[app:herald env:dev]",
+								"map[app:herald env:test]",
+								"map[app:herald env:prod]",
 	}
 
 	assert.Equal(t, expectedAppEnvList, actualAppEnvList, "The flattened list is incorrect.")
