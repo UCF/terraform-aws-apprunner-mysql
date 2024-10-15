@@ -37,4 +37,4 @@ override.tf.json
 terraform.rc
 
 # Ignore test stages files
-test/stages
+test/stage/*s
