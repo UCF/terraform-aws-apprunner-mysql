@@ -20,7 +20,7 @@ insert_final_newline = true
 # Indetation uses tab (standard)
 indent_style = tab
 # Tab width should be 8 spaces (standard)
-indent_size = 8
+indent_size = 2
 # Max line length (120 characters recommended)
 max_line_length = 120
 

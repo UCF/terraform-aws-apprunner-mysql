@@ -9,10 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestECRCreation(t *testing.T) {
-	t.Parallel()
+tempTestFolder := filepath.Join(".", "/stages")
 
-	tempTestFolder := filepath.Join(".", "/stages")
+func TestECRCreation(t *testing.T) {
 
 	defer test_structure.RunTestStage(t, "teardown_ecr_module", func() {
 
@@ -26,11 +25,11 @@ func TestECRCreation(t *testing.T) {
 			TerraformDir: "../modules/ecr",
 			Vars: map[string]interface{}{
 				"applications": []string{
-																				"announcements", "template",
-																},
-																"environments": []string{
-																				"dev", "test",
-																},
+					"announcements", "template",
+				},
+				"environments": []string{
+					"dev", "test",
+				},
 			},
 		}
 
@@ -45,6 +44,53 @@ func TestECRCreation(t *testing.T) {
 		"announcements-test",
 		"template-dev",
 		"template-test",
+	}
+
+	assert.Equal(t, expectedRepoNames, actualRepoNames, "The ECR repository names are incorrect.")
+	})
+}
+
+func TestECRCreation(t *testing.T) {
+
+	defer test_structure.RunTestStage(t, "teardown_ecr_module", func() {
+
+		ecrOptions := test_structure.LoadTerraformOptions(t, tempTestFolder)
+		terraform.Destroy(t, ecrOptions)
+	})
+
+	test_structure.RunTestStage(t, "deploy_ecr_module", func() {
+
+		ecrOptions := &terraform.Options{
+			TerraformDir: "../modules/ecr",
+			Vars: map[string]interface{}{
+				"applications": []string{
+						"announcements", "template", "herald", "events",
+				},
+				"environments": []string{
+						"dev", "test", "prod",
+				},
+			},
+		}
+
+	test_structure.SaveTerraformOptions(t, tempTestFolder, ecrOptions)
+
+	terraform.InitAndApply(t, ecrOptions)
+
+	actualRepoNames := terraform.OutputList(t, ecrOptions, "ecr_repo_names")
+
+	expectedRepoNames := []string{
+		"announcements-dev",
+		"announcements-test",
+		"announcements-prod"
+		"template-dev",
+		"template-test",
+		"template-prod",
+		"herald-dev",
+		"herald-test",
+		"herald-prod",
+		"events-dev",
+		"events-test",
+		"events-prod",
 	}
 
 	assert.Equal(t, expectedRepoNames, actualRepoNames, "The ECR repository names are incorrect.")
