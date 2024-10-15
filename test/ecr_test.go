@@ -13,7 +13,7 @@ import (
 func TestECRCreation(t *testing.T) {
 
 	tempTestFolder := filepath.Join(".", "/stages")
-	
+
 	defer test_structure.RunTestStage(t, "teardown_ecr_module", func() {
 
 		ecrOptions := test_structure.LoadTerraformOptions(t, tempTestFolder)
@@ -52,9 +52,9 @@ func TestECRCreation(t *testing.T) {
 }
 
 func TestiLargerECRCreation(t *testing.T) {
-	
+
 	tempTestFolder := filepath.Join(".", "/stages")
-	
+
 	defer test_structure.RunTestStage(t, "teardown_ecr_module", func() {
 
 		ecrOptions := test_structure.LoadTerraformOptions(t, tempTestFolder)
