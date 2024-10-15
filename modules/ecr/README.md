@@ -39,4 +39,3 @@ This module uses the appenvlist module in order to spin up a number of ECR repos
 | Name | Description |
 |------|-------------|
 | <a name="output_ecr_repo_names"></a> [ecr\_repo\_names](#output\_ecr\_repo\_names) | Names of ECR repositories |
-

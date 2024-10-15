@@ -4,14 +4,30 @@
 
 root = true
 
+# Global settings
 [*]
+# Unix-style line endings
 end_of_line = lf
+# UTF-8 encoding
 charset = utf-8
+# Remote trailing whitespace
 trim_trailing_whitespace = true
+# Ensure last line of file ends with new line
 insert_final_newline = true
-indent_style = space
-indent_size = 2
 
+# Settings for diff and markdown files
 [*.{diff,md}]
+# Undo trailing whitespace requirement
 trim_trailing_whitespace = false
+# Undo final newline requirement
 insert_final_newline = false
+
+# Settings for Go files
+[*.go]
+# Indetation uses tab (standard)
+indent_style = tab
+# Tab width should be 8 spaces (standard)
+indent_size = 8
+# Max line length (120 characters recommended)
+max_line_length = 120
+
