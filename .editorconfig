@@ -10,17 +10,10 @@ root = true
 end_of_line = lf
 # UTF-8 encoding
 charset = utf-8
-# Remote trailing whitespace
+# Remove trailing whitespace
 trim_trailing_whitespace = true
 # Ensure last line of file ends with new line
 insert_final_newline = true
-
-# Settings for diff and markdown files
-[*.{diff,md}]
-# Undo trailing whitespace requirement
-trim_trailing_whitespace = false
-# Undo final newline requirement
-insert_final_newline = false
 
 # Settings for Go files
 [*.go]
@@ -30,4 +23,3 @@ indent_style = tab
 indent_size = 8
 # Max line length (120 characters recommended)
 max_line_length = 120
-
