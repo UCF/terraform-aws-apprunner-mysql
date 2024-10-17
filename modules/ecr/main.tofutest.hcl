@@ -1,10 +1,10 @@
-variables {
-  region       = "us-east-1"
-  applications = ["announcements", "template"]
-  environments = ["dev", "qa"]
-}
+run "test2by2" {
+  variables {
+    region       = "us-east-1"
+    applications = ["announcements", "template"]
+    environments = ["dev", "qa"]
+  }
 
-run "test" {
   assert {
     condition = output.ecr_repo_names == [
       "announcements-dev",
@@ -12,11 +12,13 @@ run "test" {
       "template-dev",
       "template-qa",
     ]
+
     error_message = "Incorrect repository list."
+
   }
 }
 
-run "override" {
+run "test5by3" {
   variables {
     region       = "us-east-1"
     applications = ["announcements", "template", "knightsherald", "events", "marquee"]

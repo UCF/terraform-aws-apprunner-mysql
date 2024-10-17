@@ -1,10 +1,9 @@
-variables {
-  applications = ["announcements", "template"]
-  environments = ["dev", "test"]
-}
+run "test2by2" {
+  variables {
+    applications = ["announcements", "template"]
+    environments = ["dev", "test"]
+  }
 
-
-run "test" {
   assert {
     condition = output.app_env_list == [
       { app = "announcements", env = "dev" },
@@ -17,7 +16,7 @@ run "test" {
   }
 }
 
-run "override" {
+run "test5by3" {
   variables {
     applications = ["announcements", "template", "knightsherald", "events", "marquee"]
     environments = ["dev", "test", "prod"]
