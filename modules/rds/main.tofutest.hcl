@@ -18,3 +18,10 @@ run "subnets_group_has_ids" {
     error_message = "Subnet group does not have public subnets as subnet ids"
   }
 }
+
+run "aws_security_group_in_vpc" {
+  assert {
+    condition     = resource.aws_security_group.rds_secgrp.vpc_id == resource.aws_vpc.main.id
+    error_message = "Security group is not in VPC"
+  }
+}
