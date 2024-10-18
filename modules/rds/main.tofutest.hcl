@@ -1,3 +1,9 @@
+variables {
+  db_password  = "randomtestpassword"
+  applications = ["announcements", "template"]
+  environments = ["dev", "test"]
+}
+
 run "vpc_dns" {
   assert {
     condition     = resource.aws_vpc.main.enable_dns_support == true && resource.aws_vpc.main.enable_dns_hostnames == true
@@ -23,5 +29,47 @@ run "aws_security_group_in_vpc" {
   assert {
     condition     = resource.aws_security_group.rds_secgrp.vpc_id == resource.aws_vpc.main.id
     error_message = "Security group is not in VPC"
+  }
+}
+
+run "internet_gateway_in_vpc" {
+  assert {
+    condition     = resource.aws_internet_gateway.main.vpc_id == resource.aws_vpc.main.id
+    error_message = "Internet gateway is not in VPC"
+  }
+}
+
+run "aws_route_table_has_gateway_id" {
+  assert {
+    condition     = contains([for r in resource.aws_route_table.public.route : r.gateway_id], resource.aws_internet_gateway.main.id)
+    error_message = "Internet gateway is not in route table."
+  }
+}
+
+run "aws_route_table_association_has_main_subnet" {
+  assert {
+    condition     = resource.aws_route_table_association.main_subnet_association.subnet_id == aws_subnet.main.id
+    error_message = "Route table does not have main subnet associated."
+  }
+}
+
+run "aws_route_table_association_has_alt_subnet" {
+  assert {
+    condition     = resource.aws_route_table_association.alt_subnet_association.subnet_id == resource.aws_subnet.alternative.id
+    error_message = "Route table does not have alt subnet associated."
+  }
+}
+
+run "aws_db_instance_has_mysql" {
+  assert {
+    condition     = resource.aws_db_instance.default.engine == "mysql"
+    error_message = "DB instance is not using MySQL."
+  }
+}
+
+run "null_resource_creates_db" {
+  assert {
+    condition     = alltrue([for key, resource in resource.null_resource.create_databases : resource.id != ""])
+    error_message = "Database creation command failed."
   }
 }
