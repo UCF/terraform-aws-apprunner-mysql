@@ -7,3 +7,8 @@ variable "environments" {
   type        = list(string)
   description = "A list of environments to run applications in"
 }
+
+variable "is_test_environment" {
+  type = bool
+  default = false
+}

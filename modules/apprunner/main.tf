@@ -7,6 +7,9 @@ module "appenvlist" {
   environments = var.environments
 }
 
+module "iam" {
+  source = "../iam"
+}
 
 resource "aws_apprunner_service" "app_services" {
   for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
@@ -18,12 +21,12 @@ resource "aws_apprunner_service" "app_services" {
       image_configuration {
         port = "8000"
       }
-      image_identifier      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
-      image_repository_type = "ECR"
+      image_identifier      = var.is_test_environment ? "public.ecr.aws/aws-containers/hello-app-runner:latest" : "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
+      image_repository_type = var.is_test_environment ? "ECR_PUBLIC" : "ECR"
     }
 
     authentication_configuration {
-      access_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/apprunner-access-role"
+      access_role_arn = module.iam.apprunner_access_role_arn
     }
   }
 
@@ -39,6 +42,7 @@ resource "aws_apprunner_service" "app_services" {
     Application = each.value.app
   }
 
+  depends_on = [module.iam]
 }
 
 resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
