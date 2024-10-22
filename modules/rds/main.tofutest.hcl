@@ -66,9 +66,19 @@ run "aws_db_instance_has_mysql" {
   }
 }
 
-run "null_resource_creates_db" {
+run "null_resource_runs" {
   assert {
     condition     = alltrue([for key, resource in resource.null_resource.create_databases : resource.id != ""])
     error_message = "Database creation command failed."
   }
 }
+
+
+run "check_database_creation" {
+  assert {
+    # Check that the database creation result file exists and contains the expected output
+    condition     = alltrue([for combo in module.appenvlist.app_env_list : fileexists("/tmp/db_check_${combo.app}_${combo.env}.txt") && length(fileset("/tmp", "db_check_${combo.app}_${combo.env}.txt")) > 0])
+    error_message = "Database creation verification failed for one or more environments."
+  }
+}
+

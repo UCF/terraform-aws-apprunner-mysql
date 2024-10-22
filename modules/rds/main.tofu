@@ -72,7 +72,7 @@ locals {
 resource "random_password" "password" {
   length           = 16
   special          = true
-  override_special = "!#$%&*=+[]{}<>:?"
+  override_special = "#&*=+:?"
 }
 
 resource "aws_db_instance" "default" {
@@ -112,7 +112,13 @@ resource "null_resource" "create_databases" {
   for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
 
   provisioner "local-exec" {
-    command = "mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${aws_db_instance.default.password} -e 'CREATE DATABASE IF NOT EXISTS ${each.value.app}_${each.value.env};'"
+    command = <<EOT
+    # Create the database
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e 'CREATE DATABASE IF NOT EXISTS "${each.value.app}_${each.value.env}";'
+
+    # Check if the database exists and write the result to a temp file
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e 'SHOW DATABASES LIKE "${each.value.app}_${each.value.env}";' > /tmp/db_check_${each.value.app}_${each.value.env}.txt
+    EOT
   }
 
   depends_on = [aws_db_instance.default]
