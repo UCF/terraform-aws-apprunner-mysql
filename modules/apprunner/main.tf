@@ -30,11 +30,6 @@ resource "aws_apprunner_service" "app_services" {
     }
   }
 
-  instance_configuration {
-    cpu    = "1024"
-    memory = "2048"
-  }
-
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.app_scaling.arn
 
   tags = {
