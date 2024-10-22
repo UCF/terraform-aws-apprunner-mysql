@@ -39,23 +39,27 @@ resource "aws_iam_policy" "ecr_access_policy" {
       {
         Effect   = "Allow",
         Action   = [
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:DescribeImages"
+          "ecr-public:GetDownloadUrlForLayer",
+          "ecr-public:BatchCheckLayerAvailability",
+          "ecr-public:BatchGetImage",
+          "ecr-public:DescribeRepositories",
+          "ecr-public:GetRepositoryPolicy",
+          "ecr-public:ListTagsForResource",
+          "ecr-public:DescribeImages",
+          "ecr-public:ListImages",
         ],
         Resource = "*"
       },
       {
         Effect   = "Allow",
-        Action   = "ecr:GetAuthorizationToken",
+        Action   = "ecr-public:GetAuthorizationToken",
         Resource = "*"
       }
     ]
   })
 }
 
-
+ 
 resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
   role       = aws_iam_role.apprunner_role.name
   policy_arn = aws_iam_policy.ecr_access_policy.arn
