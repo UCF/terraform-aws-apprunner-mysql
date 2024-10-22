@@ -1,7 +1,7 @@
 variables {
   applications = ["announcements", "template"]
   environments = ["dev", "test"]
-  is_test_environment = true
+  is_tofu_test_environment = true
 }
 
 run "aws_apprunner_service_creation" {
