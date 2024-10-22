@@ -1,5 +1,4 @@
 variables {
-  db_password  = "randomtestpassword"
   applications = ["announcements", "template"]
   environments = ["dev", "test"]
 }

@@ -69,6 +69,12 @@ locals {
   timestamp_sanitized = replace("${local.timestamp}", "/[-| |T|Z|:]/", "")
 }
 
+resource "random_password" "password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*=+[]{}<>:?"
+}
+
 resource "aws_db_instance" "default" {
   identifier        = "cm-appfolio-db"
   allocated_storage = 20
@@ -76,7 +82,7 @@ resource "aws_db_instance" "default" {
   engine_version    = "8.0"
   instance_class    = "db.t3.micro"
   username          = "admin"
-  password          = var.db_password
+  password          = random_password.password.result
 
   publicly_accessible = var.db_public_access
 
@@ -106,7 +112,7 @@ resource "null_resource" "create_databases" {
   for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
 
   provisioner "local-exec" {
-    command = "mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e 'CREATE DATABASE IF NOT EXISTS ${each.value.app}_${each.value.env};'"
+    command = "mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${aws_db_instance.default.password} -e 'CREATE DATABASE IF NOT EXISTS ${each.value.app}_${each.value.env};'"
   }
 
   depends_on = [aws_db_instance.default]
