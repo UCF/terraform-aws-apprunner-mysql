@@ -15,6 +15,7 @@ resource "aws_iam_role" "apprunner_role" {
   })
 }
 
+# More information on access policies at https://docs.aws.amazon.com/apprunner/latest/dg/security_iam_service-with-iam.html
 resource "aws_iam_policy" "ecr_access_policy" {
   name = "apprunner-ecr-access-policy"
 
