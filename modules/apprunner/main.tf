@@ -21,8 +21,8 @@ resource "aws_apprunner_service" "app_services" {
       image_configuration {
         port = "8000"
       }
-      image_identifier      = var.is_test_environment ? "public.ecr.aws/aws-containers/hello-app-runner:latest" : "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
-      image_repository_type = var.is_test_environment ? "ECR_PUBLIC" : "ECR"
+      image_identifier      = var.is_tofu_test_environment ? "public.ecr.aws/aws-containers/hello-app-runner:latest" : "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
+      image_repository_type = var.is_tofu_test_environment ? "ECR_PUBLIC" : "ECR"
     }
 
     authentication_configuration {
