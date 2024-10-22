@@ -38,3 +38,13 @@ terraform.rc
 
 # Ignore test stages files
 test/stage/*
+
+terraform.tfvars
+*.swp
+terratest_logs/
+infrastructure/.terraform/*
+infrastructure/terraform.tfvars
+apprunner/.terraform/*
+apprunner/terraform.tfvars
+**/.terraform/*
+**/terraform.tfvars
