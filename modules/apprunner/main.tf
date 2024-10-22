@@ -26,7 +26,7 @@ resource "aws_apprunner_service" "app_services" {
     }
 
     authentication_configuration {
-      access_role_arn = module.iam.apprunner_access_role_arn
+      access_role_arn =  "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/apprunner-ecr-access-policy"
     }
   }
 
