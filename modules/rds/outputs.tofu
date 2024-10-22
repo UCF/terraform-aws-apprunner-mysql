@@ -6,3 +6,4 @@ output "db_password" {
   value     = resource.aws_db_instance.default.password
   sensitive = true
 }
+
