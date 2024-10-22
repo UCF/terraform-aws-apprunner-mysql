@@ -106,7 +106,7 @@ resource "null_resource" "create_databases" {
   for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
 
   provisioner "local-exec" {
-    command = "mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e 'CREATE DATABASE ${each.value.app}_${each.value.env};'"
+    command = "mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p${var.db_password} -e 'CREATE DATABASE IF NOT EXISTS ${each.value.app}_${each.value.env};'"
   }
 
   depends_on = [aws_db_instance.default]
