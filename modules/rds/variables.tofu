@@ -1,9 +1,3 @@
-variable "db_password" {
-  type        = string
-  sensitive   = true
-  description = "The password for the RDS instance"
-}
-
 variable "db_public_access" {
   type        = bool
   description = "Whether the db is open for public access or not"
