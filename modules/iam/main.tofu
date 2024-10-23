@@ -29,33 +29,10 @@ resource "aws_iam_policy" "ecr_access_policy" {
           "ecr:BatchGetImage",
           "ecr:BatchCheckLayerAvailability",
           "ecr:DescribeImages",
+	  "ecr:GetAuthorizationToken",
         ],
         Resource = "*"
       },
-      {
-        Effect   = "Allow",
-        Action   = "ecr:GetAuthorizationToken",
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "ecr-public:GetDownloadUrlForLayer",
-          "ecr-public:BatchCheckLayerAvailability",
-          "ecr-public:BatchGetImage",
-          "ecr-public:DescribeRepositories",
-          "ecr-public:GetRepositoryPolicy",
-          "ecr-public:ListTagsForResource",
-          "ecr-public:DescribeImages",
-          "ecr-public:ListImages",
-        ],
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow",
-        Action   = "ecr-public:GetAuthorizationToken",
-        Resource = "*"
-      }
     ]
   })
 }
