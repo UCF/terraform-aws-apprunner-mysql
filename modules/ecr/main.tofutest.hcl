@@ -49,3 +49,24 @@ run "test5by3" {
     error_message = "Incorrect ECR repository names."
   }
 }
+
+# A default image is added to ensure the AppRunner tests and spin-up work
+run "check_default_image_pushed_to_ecr" {
+  assert {
+  # Verify the null_resource pushes image successfully
+  condition = resource.null_resource.push_default_image.id != ""
+  error_message = "The container image was not pushed to ECR successfully"
+  }
+
+  assert {
+  # Ensure ECR reposiory exists
+  condition = resource.aws_ecr_repository.repositories.repository_url != ""
+  error_message = "ECR repository does not exist"
+  }
+
+  assert {
+  # Use aws_ecr_lifecyle_policy to check image exists
+  condition = length(resource.aws_ecr_repository.repositories.image_scan_findings) > 0
+  error_message = "No images found in ECR repository"
+  }
+}
