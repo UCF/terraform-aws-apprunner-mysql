@@ -22,7 +22,7 @@ run "aws_iam_policy_ecr_access_policy" {
   }
 
   assert {
-    condition     = jsondecode(resource.aws_iam_policy.ecr_access_policy.policy).Statement[0].Action == "ecr:GetAuthorizationToken"
+    condition     = contains([for s in jsondecode(resource.aws_iam_policy.ecr_access_policy.policy).Statement[0].Action : s], "ecr:GetAuthorizationToken")
     error_message = "ECR access policy does not include 'ecr:GetAuthorizationToken'"
   }
 }
