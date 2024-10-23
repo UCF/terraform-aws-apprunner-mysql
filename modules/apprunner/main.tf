@@ -1,8 +1,8 @@
 data "aws_caller_identity" "current" {}
 
-module "appenvlist" {
-  source = "../appenvlist"
-  
+module "ecr" {
+  source = "../ecr"
+
   applications = var.applications
   environments = var.environments
 }
@@ -12,32 +12,27 @@ module "iam" {
 }
 
 resource "aws_apprunner_service" "app_services" {
-  for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
+  for_each = toset(module.ecr.ecr_repo_names)
 
-  service_name = "${each.value.app}-${each.value.env}-service"
+  service_name = "${each.value}-service"
 
   source_configuration {
     image_repository {
       image_configuration {
-        port = "8000"
+        port = var.is_tofu_test_environment ? "80" : "8000"
       }
-      image_identifier      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value.app}-${each.value.env}:latest"
+      image_identifier      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value}:latest"
       image_repository_type = "ECR"
     }
 
     authentication_configuration {
-      access_role_arn =  "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/apprunner-access-role"
+      access_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/apprunner-access-role"
     }
   }
 
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.app_scaling.arn
 
-  tags = {
-    Environment = each.value.env
-    Application = each.value.app
-  }
-
-  depends_on = [module.iam]
+  depends_on = [module.iam, module.ecr]
 }
 
 resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
