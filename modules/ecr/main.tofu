@@ -16,12 +16,12 @@ module "appenvlist" {
 
 resource "aws_ecr_repository" "repositories" {
   for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
-  
+
   name         = "${each.value.app}-${each.value.env}"
   force_delete = true
 }
 
-resource "null_resoure" "push_default_image" {
+resource "null_resource" "push_default_image" {
   for_each = aws_ecr_repository.repositories
 
   provisioner "local-exec" {
@@ -41,4 +41,14 @@ resource "null_resoure" "push_default_image" {
   }
 
   depends_on = [aws_ecr_repository.repositories]
+}
+
+resource "null_resource" "check_ecr_images" {
+  for_each = { for repo in aws_ecr_repository.repositories : repo.name => repo }
+
+  provisioner "local-exec" {
+    command = <<EOT
+    aws ecr describe-images --repository-name ${each.key} --region us-east-1 --query 'imageDetails' --output json > /tmp/ecr_image_check_${each.key}.json
+    EOT
+  }
 }

@@ -1,3 +1,9 @@
+variables {
+  region       = "us-east-1"
+  applications = ["announcements", "template"]
+  environments = ["dev", "test"]
+}
+
 run "test2by2" {
   variables {
     region       = "us-east-1"
@@ -52,21 +58,16 @@ run "test5by3" {
 
 # A default image is added to ensure the AppRunner tests and spin-up work
 run "check_default_image_pushed_to_ecr" {
+
   assert {
-  # Verify the null_resource pushes image successfully
-  condition = resource.null_resource.push_default_image.id != ""
-  error_message = "The container image was not pushed to ECR successfully"
+    # Verify the null_resource pushes image successfully
+    condition     = alltrue([for repo_key in keys(null_resource.check_ecr_images) : null_resource.check_ecr_images[repo_key].id != ""])
+    error_message = "The container image was not pushed to ECR successfully"
   }
 
   assert {
-  # Ensure ECR reposiory exists
-  condition = resource.aws_ecr_repository.repositories.repository_url != ""
-  error_message = "ECR repository does not exist"
-  }
-
-  assert {
-  # Use aws_ecr_lifecyle_policy to check image exists
-  condition = length(resource.aws_ecr_repository.repositories.image_scan_findings) > 0
-  error_message = "No images found in ECR repository"
+    # Ensure all ECR repositories exist
+    condition     = alltrue([for repo_key in keys(null_resource.check_ecr_images) : length(fileset("/tmp", "ecr_image_check_${repo_key}.json")) > 0])
+    error_message = "An ECR repository does not exist"
   }
 }
