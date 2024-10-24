@@ -13,3 +13,10 @@ variable "environments" {
   type        = list(string)
   description = "List of application environments"
 }
+
+variable "app_env_list" {
+  type = list(object({
+           app = string
+           env = string
+         }))
+}
