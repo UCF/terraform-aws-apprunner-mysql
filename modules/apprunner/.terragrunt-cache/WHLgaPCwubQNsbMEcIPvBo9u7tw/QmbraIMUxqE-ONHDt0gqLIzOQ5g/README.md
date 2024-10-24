@@ -1,6 +1,6 @@
 # OpenTofu Module for AWS AppRunner
 
-This module creates AppRunner services in AWS. Podman is required to run `tofu test`. Ensure `podman machine init` and `podman machine start` have been commanded before running `tofu test`.
+This module creates AppRunner services in AWS. Podman is required to run `tofu test`. Ensure `podman machine init` and `podman machine start` have been commanded before running `tofu test`. Furthermore, the ECR and IAM modules must be applied for these tests to work.
 
 ## Requirements
 

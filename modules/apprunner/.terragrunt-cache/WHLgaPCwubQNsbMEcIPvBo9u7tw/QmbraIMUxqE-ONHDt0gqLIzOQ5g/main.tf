@@ -1,3 +1,7 @@
+provider "aws" {
+  region = var.region 
+}
+
 data "aws_caller_identity" "current" {}
 
 resource "aws_apprunner_service" "app_services" {
