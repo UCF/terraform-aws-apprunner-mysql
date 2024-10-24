@@ -101,15 +101,8 @@ resource "aws_db_instance" "default" {
 
 }
 
-module "appenvlist" {
-  source = "../appenvlist"
-
-  applications = var.applications
-  environments = var.environments
-}
-
 resource "null_resource" "create_databases" {
-  for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
+  for_each = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 
   provisioner "local-exec" {
 
