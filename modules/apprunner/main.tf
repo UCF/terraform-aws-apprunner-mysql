@@ -19,7 +19,7 @@ resource "aws_apprunner_service" "app_services" {
   source_configuration {
     image_repository {
       image_configuration {
-        # Workaround for testing default nginx container to guarantee AppRunner completes its setup
+        # Workaround for testing default nginx container at port 80 to guarantee AppRunner completes its setup
         port = var.is_tofu_test_environment ? "80" : "8000"
       }
       image_identifier      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value}:latest"
