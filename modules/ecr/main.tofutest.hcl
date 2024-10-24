@@ -1,22 +1,25 @@
 variables {
   region       = "us-east-1"
-  applications = ["announcements", "template"]
-  environments = ["dev", "test"]
+  app_env_list = [{ app = "announcements", env = "dev"},
+                    { app = "announcements", env = "test"},
+                    { app = "template", env = "dev"},
+                    { app = "template", env = "test"},
+                 ]
 }
 
 run "test2by2" {
   variables {
     region       = "us-east-1"
     applications = ["announcements", "template"]
-    environments = ["dev", "qa"]
+    environments = ["dev", "test"]
   }
 
   assert {
     condition = output.ecr_repo_names == [
       "announcements-dev",
-      "announcements-qa",
+      "announcements-test",
       "template-dev",
-      "template-qa",
+      "template-test",
     ]
 
     error_message = "Incorrect repository list."
