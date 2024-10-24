@@ -2,6 +2,13 @@ variables {
   is_tofu_test_environment = true
   applications             = ["announcements", "template"]
   environments             = ["dev", "test"]
+  app_env_list = [
+    { app = "announcements", env = "dev" },
+    { app = "announcements", env = "test" },
+    { app = "template", env = "dev" },
+    { app = "template", env = "test" },
+  ]
+  ecr_repo_names = ["announcements-dev", "announcements-test", "template-dev", "template-test"]
 }
 
 run "aws_apprunner_service_creation" {
