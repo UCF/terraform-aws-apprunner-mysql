@@ -1,3 +1,8 @@
+variable "region" {
+  type = string
+  default = "us-east-1"
+}
+
 variable "db_public_access" {
   type        = bool
   description = "Whether the db is open for public access or not"
