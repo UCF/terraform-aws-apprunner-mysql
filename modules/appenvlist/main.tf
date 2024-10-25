@@ -1,3 +1,7 @@
+provider "aws" {
+  region = var.region
+}
+
 locals {
   app_env_combinations = [
     for app in var.applications : [
