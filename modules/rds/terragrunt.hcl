@@ -1,5 +1,9 @@
 terraform {
-  source = "."  # Path to the actual RDS Terraform module
+  source = "." 
+}
+
+include {
+  path = find_in_parent_folders()
 }
 
 dependency "appenvlist" {
