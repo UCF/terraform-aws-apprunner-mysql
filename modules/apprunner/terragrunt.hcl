@@ -2,6 +2,10 @@ terraform {
   source = "."  
 }
 
+include {
+  path = find_in_parent_folders()
+}
+
 dependency "appenvlist" {
   config_path = "../appenvlist"
 }

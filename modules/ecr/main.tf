@@ -2,6 +2,10 @@ provider "aws" {
   region = var.region
 }
 
+locals {
+  timestamp           = timestamp()
+  timestamp_sanitized = replace("${local.timestamp}", "/[-| |T|Z|:]/", "")
+}
 
 resource "aws_ecr_repository" "repositories" {
   for_each = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
@@ -19,7 +23,7 @@ resource "null_resource" "push_default_image" {
         podman pull nginx:latest
 
 	# Tag the image for the ECR repository
-	podman tag nginx:latest ${each.value.repository_url}:latest
+	podman tag nginx:latest ${each.value.repository_url}:${local.timestamp_sanitized}
 
 	# Login to AWS ECR
 	aws ecr get-login-password --region us-east-1 | podman login --username AWS --password-stdin ${each.value.repository_url}
