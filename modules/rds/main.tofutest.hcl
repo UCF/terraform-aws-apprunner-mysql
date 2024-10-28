@@ -7,6 +7,9 @@ variables {
                   { app = "template", env = "dev"},
                   { app = "template", env = "test"},
                  ]
+  is_tofu_test = true
+  passwords = ["anndev", "anntest", "tempdev", "temptest"]
+  instance_pw = "test"
 }
 
 run "vpc_dns" {
