@@ -1,5 +1,4 @@
-# Terraform scripts for RDS, ECR, and App Runner
-
+# Terragrunt-wrapped OpenTofu scripts for RDS, ECR, and AppRunner including IAM
 
 ## Instructions
 
