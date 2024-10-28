@@ -86,7 +86,7 @@ resource "aws_db_instance" "default" {
   engine_version    = "8.0"
   instance_class    = "db.t3.micro"
   username          = "admin"
-  password          = random_password.password.result
+  password          = var.is_tofu_test ? random_password.password.result : var.instance_pw
 
   publicly_accessible = var.db_public_access
 
@@ -106,18 +106,33 @@ resource "aws_db_instance" "default" {
 }
 
 resource "null_resource" "create_databases" {
-  for_each = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+  for_each = { 
+    for idx, combo in var.app_env_list :
+    "${combo.app}-${combo.env}" => {
+      combo =  combo
+      password = var.passwords[idx]
+    }
+  }
 
   provisioner "local-exec" {
 
     command = <<EOT
     # Create the database
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e 'CREATE DATABASE IF NOT EXISTS "${each.value.app}_${each.value.env}";'
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "CREATE DATABASE IF NOT EXISTS \`${each.key}\`;"
 
     # Check if the database exists and write the result to a temp file
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e 'SHOW DATABASES LIKE "${each.value.app}_${each.value.env}";' > /tmp/db_check_${each.value.app}_${each.value.env}.txt
-    EOT
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "SHOW DATABASES LIKE \`${each.key}\`;" > /tmp/db_check_${each.key}.txt
+  
+    # Create the user (adjust 'db_user_name' and host as needed)
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "CREATE USER IF NOT EXISTS '${each.key}'@'%' IDENTIFIED BY '${each.value.password}';"
 
+      # Grant privileges to the user on the new database
+      mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "GRANT ALL PRIVILEGES ON \`${each.key}\`.* TO '${each.key}'@'%';"
+
+      # Alter the user password (if you need to change it later)
+      mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "ALTER USER '${each.key}'@'%' IDENTIFIED BY '${each.value.password}';"
+ 
+    EOT 
   }
 
   depends_on = [aws_db_instance.default]

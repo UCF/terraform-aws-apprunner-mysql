@@ -3,6 +3,11 @@ variable "region" {
   default = "us-east-1"
 }
 
+variable "is_tofu_test" {
+  type = bool
+  default = false
+}
+
 variable "db_public_access" {
   type        = bool
   description = "Whether the db is open for public access or not"
@@ -36,4 +41,14 @@ variable "app_env_list" {
           app = string
           env = string
          }))
+}
+
+variable "instance_pw" {
+  type = string
+  description = "The main password for the database instance"
+}
+
+variable "passwords" {
+  type = list(string)
+  description = "The passwords for each database"
 }
