@@ -18,6 +18,18 @@ provider "registry.opentofu.org/hashicorp/aws" {
   ]
 }
 
+provider "registry.opentofu.org/hashicorp/mysql" {
+  version = "1.9.0"
+  hashes = [
+    "h1:OV6XXTLGbKRdcmInOVpuQZcda3UWZ4DsTdjd3BWJwLI=",
+    "zh:661013a9ad41b2104c65cc3c51bcf06b8e1b04197859f446c9d329f02c92a791",
+    "zh:849e84aad8d7a3a224dec1bd5fbd9c59e6872227f2de94f5c18930c9bb4e95e9",
+    "zh:a7b5a5042d7ec29f74d27c848765d2b70bb4db86d4ee1c6e87d39b9f02d18d6e",
+    "zh:bb3ef2a0b16ceb0cdb5118d69fe0598311d52a54fe46a0c2d77d959b74cce6ea",
+    "zh:fc159a25948ab38d24f502bc930ebfb3c7a43e5ea3032f318707e9cba7143ed2",
+  ]
+}
+
 provider "registry.opentofu.org/hashicorp/null" {
   version = "3.2.3"
   hashes = [
