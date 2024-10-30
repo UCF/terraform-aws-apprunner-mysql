@@ -38,3 +38,15 @@ run "iam_role_policy_attachments" {
     error_message = "The policy ARN does not match the ECR access policy"
   }
 }
+
+run "github_iam" {
+  assert {
+    condition     = jsondecode(resource.aws_iam_policy.github_ecr_access.policy) == data.aws_iam_policy_document.githubecrdoc.json
+    error_message = "Github ECR Access Policy is not the proper policy document."
+  }
+
+  assert {
+    condition     = resource.aws_iam_role_policy_attachment.ecraccess_attach.policy_arn == aws_iam_policy.github_ecr_access.arn
+    error_message = "GitHub ECR Access not attached to IAM Role"
+  }
+}
