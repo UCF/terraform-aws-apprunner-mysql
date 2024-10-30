@@ -1,10 +1,10 @@
 variable "region" {
-  type = string
+  type    = string
   default = "us-east-1"
 }
 
 variable "is_tofu_test" {
-  type = bool
+  type    = bool
   default = false
 }
 
@@ -38,17 +38,17 @@ variable "environments" {
 
 variable "app_env_list" {
   type = list(object({
-          app = string
-          env = string
-         }))
+    app = string
+    env = string
+  }))
 }
 
 variable "instance_pw" {
-  type = string
+  type        = string
   description = "The main password for the database instance"
 }
 
 variable "passwords" {
-  type = list(string)
+  type        = list(string)
   description = "The passwords for each database"
 }

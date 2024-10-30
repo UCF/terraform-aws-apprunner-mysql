@@ -105,11 +105,42 @@ resource "aws_db_instance" "default" {
 
 }
 
-resource "null_resource" "create_databases" {
-  for_each = { 
+provider "mysql" {
+  endpoint = aws_db_instance.default.address
+  username = aws_db_instance.default.username
+  password = aws_db_instance.default.password
+}
+
+resource "mysql_database" "databases" {
+  for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+  name     = each.key
+}
+
+resource "mysql_user" "appusers" {
+  for_each = {
     for idx, combo in var.app_env_list :
     "${combo.app}-${combo.env}" => {
-      combo =  combo
+      combo    = combo
+      password = var.passwords[idx]
+    }
+  }
+  user               = each.key
+  plaintext_password = each.value.password
+}
+
+resource "mysql_grant" "appgrants" {
+  for_each   = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+  user       = each.key
+  host       = aws_db_instance.default.address
+  database   = each.key
+  privileges = ["ALL"]
+}
+
+resource "null_resource" "create_databases" {
+  for_each = {
+    for idx, combo in var.app_env_list :
+    "${combo.app}-${combo.env}" => {
+      combo    = combo
       password = var.passwords[idx]
     }
   }
@@ -117,21 +148,9 @@ resource "null_resource" "create_databases" {
   provisioner "local-exec" {
 
     command = <<EOT
-    # Create the database
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "CREATE DATABASE IF NOT EXISTS \`${each.key}\`;"
 
     # Check if the database exists and write the result to a temp file
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "SHOW DATABASES LIKE \`${each.key}\`;" > /tmp/db_check_${each.key}.txt
-  
-    # Create the user (adjust 'db_user_name' and host as needed)
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "CREATE USER IF NOT EXISTS '${each.key}'@'%' IDENTIFIED BY '${each.value.password}';"
-
-      # Grant privileges to the user on the new database
-      mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "GRANT ALL PRIVILEGES ON \`${each.key}\`.* TO '${each.key}'@'%';"
-
-      # Alter the user password (if you need to change it later)
-      mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "ALTER USER '${each.key}'@'%' IDENTIFIED BY '${each.value.password}';"
- 
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "SHOW DATABASES LIKE \`${each.key}\`;" > /tmp/db_check_${each.key}.txt 
     EOT 
   }
 
