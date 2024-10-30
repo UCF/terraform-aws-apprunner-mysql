@@ -34,3 +34,20 @@ resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
   max_size        = 3
   min_size        = 1
 }
+
+locals {
+  service_arn_map = zipmap(var.ecr_repo_names, aws_apprunner_service.app_services[*].arn)
+}
+
+resource "aws_apprunner_custom_domain_association" "domains" {
+  for_each = toset(var.ecr_repo_names)
+
+  domain_name = "${each.value}.cm.ucf.edu"
+  service_arn = local.service_arn_map[each.value]
+}
+
+
+
+
+
+
