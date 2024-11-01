@@ -25,6 +25,10 @@ resource "aws_apprunner_service" "app_services" {
 
   auto_scaling_configuration_arn = aws_apprunner_auto_scaling_configuration_version.app_scaling.arn
 
+  tags = {
+    app = split("-", each.value)[0]
+    env = split("-", each.value)[1]
+  }
 }
 
 resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
@@ -36,12 +40,14 @@ resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
 }
 
 locals {
-  service_arn_map = zipmap(var.ecr_repo_names, aws_apprunner_service.app_services[*].arn)
+  app_env_map = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 }
 
 resource "aws_apprunner_custom_domain_association" "domains" {
-  for_each = toset(var.ecr_repo_names)
+  for_each = local.app_env_map
 
-  domain_name = "${each.value}.cm.ucf.edu"
-  service_arn = local.service_arn_map[each.value]
+  domain_name = each.value.env == "prod" ? "${each.value.app}.${var.domain_name}" : "${each.value.app}-${each.value.env}.${var.domain_name}"
+  service_arn = one(
+    [for service in aws_apprunner_service.app_services : service.arn if service.tags["app"] == each.value.app && service.tags["env"] == each.value.env]
+  )
 }
