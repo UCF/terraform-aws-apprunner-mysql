@@ -45,9 +45,3 @@ resource "aws_apprunner_custom_domain_association" "domains" {
   domain_name = "${each.value}.cm.ucf.edu"
   service_arn = local.service_arn_map[each.value]
 }
-
-
-
-
-
-

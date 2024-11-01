@@ -3,6 +3,7 @@ provider "aws" {
 }
 
 locals {
+  # Timestamps for uniqueness of database snapshot names to prevent apply failure
   timestamp           = timestamp()
   timestamp_sanitized = replace("${local.timestamp}", "/[-| |T|Z|:]/", "")
 }
