@@ -4,17 +4,17 @@
 
 1. Ensure you are authenticated to your AWS account and have MySQL, OpenTofu, Podman, Terragrunt, and the AWS CLI V2 installed on your command line
 
-a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys" and copying the exported credentials into your terminal
+    a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys" and copying the exported credentials into your terminal
 
-b. To install MySQL, see the following document: https://downloads.mysql.com/docs/mysql-installation-excerpt-8.0-en.pdf
+    b. To install MySQL, see the following document: https://downloads.mysql.com/docs/mysql-installation-excerpt-8.0-en.pdf
 
-c. To install OpenTofu, see: https://opentofu.org/docs/intro/install/
+    c. To install OpenTofu, see: https://opentofu.org/docs/intro/install/
 
-d. To install Terragrunt, see: https://davidbegin.github.io/terragrunt/ [Note: Installing Terraform is not required as we have OpenTofu]
+    d. To install Terragrunt, see: https://davidbegin.github.io/terragrunt/ [Note: Installing Terraform is not required as we have OpenTofu]
 
-e. To install Podman, see: https://podman.io/docs/installation
+    e. To install Podman, see: https://podman.io/docs/installation
 
-f. To install the AWS CLIV2, see: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+    f. To install the AWS CLIV2, see: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 2. Clone the Repository
 
