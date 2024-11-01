@@ -1,3 +1,11 @@
+#################################################################
+# variables.tf                                                  #
+#################################################################
+# This file contains the definitions of the input variables     #
+# needed to run this module. Descriptions are outputted to the  #
+# user if the variables have not been provided to the module.   #
+#################################################################
+
 variable "applications" {
   type        = list(string)
   description = "A list of applications to be hosted. Each application name must be less than 27 characters to comply with the MySQL database name length constraint."
