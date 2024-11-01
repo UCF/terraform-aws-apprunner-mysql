@@ -1,7 +1,9 @@
 variable "applications" {
   type        = list(string)
-  description = "A list of applications to be hosted"
-  default     = ["announcements"]
+  description = "A list of applications to be hosted. Each application name must be less than 27 characters to comply with the MySQL database name length constraint."
+
+# This default is optional and remains to serve as a syntax example
+# default     = ["announcements", "template"]
 
   validation {
     condition     = alltrue([for app in var.applications : length(app) < 27])
@@ -11,8 +13,10 @@ variable "applications" {
 
 variable "environments" {
   type        = list(string)
-  description = "A list of environments required for each application"
-  default     = ["dev"]
+  description = "A list of environments required for each application. Each environment name must be less than 5 characters to comply with the MySQL database name length constraint."
+
+# This default is optional and remains to serve as a syntax example
+# default     = ["dev", "test"]
 
   validation {
     condition     = alltrue([for env in var.environments : length(env) < 5])
