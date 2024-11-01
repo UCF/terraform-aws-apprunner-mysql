@@ -1,3 +1,7 @@
+provider "aws" {
+  region = var.region
+}
+
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
@@ -82,7 +86,7 @@ resource "aws_db_instance" "default" {
   engine_version    = "8.0"
   instance_class    = "db.t3.micro"
   username          = "admin"
-  password          = random_password.password.result
+  password          = var.is_tofu_test ? random_password.password.result : var.instance_pw
 
   publicly_accessible = var.db_public_access
 
@@ -101,26 +105,53 @@ resource "aws_db_instance" "default" {
 
 }
 
-module "appenvlist" {
-  source = "../appenvlist"
+provider "mysql" {
+  endpoint = aws_db_instance.default.address
+  username = aws_db_instance.default.username
+  password = aws_db_instance.default.password
+}
 
-  applications = var.applications
-  environments = var.environments
+resource "mysql_database" "databases" {
+  for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+  name     = each.key
+}
+
+resource "mysql_user" "appusers" {
+  for_each = {
+    for idx, combo in var.app_env_list :
+    "${combo.app}-${combo.env}" => {
+      combo    = combo
+      password = var.passwords[idx]
+    }
+  }
+  user               = each.key
+  plaintext_password = each.value.password
+}
+
+resource "mysql_grant" "appgrants" {
+  for_each   = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+  user       = each.key
+  host       = aws_db_instance.default.address
+  database   = each.key
+  privileges = ["ALL"]
 }
 
 resource "null_resource" "create_databases" {
-  for_each = { for combo in module.appenvlist.app_env_list : "${combo.app}-${combo.env}" => combo }
+  for_each = {
+    for idx, combo in var.app_env_list :
+    "${combo.app}-${combo.env}" => {
+      combo    = combo
+      password = var.passwords[idx]
+    }
+  }
 
   provisioner "local-exec" {
 
     command = <<EOT
-    # Create the database
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e 'CREATE DATABASE IF NOT EXISTS "${each.value.app}_${each.value.env}";'
 
     # Check if the database exists and write the result to a temp file
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e 'SHOW DATABASES LIKE "${each.value.app}_${each.value.env}";' > /tmp/db_check_${each.value.app}_${each.value.env}.txt
-    EOT
-
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "SHOW DATABASES LIKE \`${each.key}\`;" > /tmp/db_check_${each.key}.txt 
+    EOT 
   }
 
   depends_on = [aws_db_instance.default]

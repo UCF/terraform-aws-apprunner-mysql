@@ -1,49 +1,54 @@
-# Terraform scripts for RDS, ECR, and App Runner
-
+# Terragrunt-wrapped OpenTofu scripts for RDS, ECR, and AppRunner including IAM
 
 ## Instructions
 
-1. Ensure you are authenticated to your AWS account and have MySQL, OpenTofu, and Terragrunt installed on your command line
+1. Ensure you are authenticated to your AWS account and have MySQL, OpenTofu, Podman, Terragrunt, and the AWS CLI V2 installed on your command line
 
-a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys" and copying the exported credentials into your terminal
+    a. To authenticate to AWS, go to https://ucf-console.awsapps.com/start, select the correct account after logging in, and follow the instructions to get credentials for the appropriate access policy by clicking "Access Keys" and copying the exported credentials into your terminal
 
-b. To install MySQL, see the following document: https://downloads.mysql.com/docs/mysql-installation-excerpt-8.0-en.pdf
+    b. To install MySQL, see the following document: https://downloads.mysql.com/docs/mysql-installation-excerpt-8.0-en.pdf
 
-c. To install OpenTofu, see: https://opentofu.org/docs/intro/install/
+    c. To install OpenTofu, see: https://opentofu.org/docs/intro/install/
 
-d. To install Terragrunt, see: https://davidbegin.github.io/terragrunt/
+    d. To install Terragrunt, see: https://davidbegin.github.io/terragrunt/ [Note: Installing Terraform is not required as we have OpenTofu]
+
+    e. To install Podman, see: https://podman.io/docs/installation
+
+    f. To install the AWS CLIV2, see: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 2. Clone the Repository
 
-3. Go to the infrastructure folder (`cd infrastructure`) 
+3. Go to the modules folder (`cd modules`) 
 
-4. Download `terraform.tfvars` from SecretServer and place it in that folder
+4. Download `<environment>.tfvars` (e.g., `prod.tfvars`) from SecretServer and place it in that folder
 
-5. Run `terragrunt init` and then `terragrunt apply`
+[Optional: Run `terragrunt run-all plan -var-file="<insert absolute path to file>/<environment>.tfvars` to see what the changes will be before you apply them]
 
-6. Check the configuration and confirm the infrastructure before typing 'yes' (If the apply succeeded, everything except for the App Runner services and the containers in the ECR repository will have been created)
+5. Run `terragrunt run-all apply -var-file="<insert absolute path to file>/<environment>.tfvars`
 
-6.1 Add the data to the database with a command like
+6. Add the data to the database with a command like
 
 `mysql -h <host> -u <username> -P 3306 -p <database_name> < <sqlfile>`
 
 7. It is now necessary to push a container image to the ECR repository with the correct database url attached. To do so, change the `[ENV]_DATABASE_URL` secret in the app's Github Actions secret to a string of the form:
 
-`mysql://admin:password@cm-appfolio-db.c9o06ok6uz10.us-east-1.rds.amazonaws.com:3306/announcements_qa`
+`mysql://admin:<outputted tofu password>@<DB Endpoint>:3306/<appname>-<envname>`
 
-Replace the URL in the middle with the proper endpoint of your database and replace "announcements" with your app name and "qa" with the environment name.
+8. Commit a change to the `stages/dev` branch, for example, of the app repository so Github Actions can send the container image to ECR where App Runner will pull it from.
 
-8. Commit a change to the `stages/dev` branch of the app repository so Github Actions can send the container image to ECR where App Runner will pull it from.
+## Making changes
 
-9. Go to the apprunner folder (`cd ../apprunner`)
+To make changes to the infrastructure, please do Test-Driven Development with OpenTofu (i.e., write a test that verifies the change, and then write the change) to prevent the codebase from becoming legacy.
 
-10. Run `terragrunt init` and then `terragrunt apply` to set up the App Runner IAM
+After making the change, DO NOT run `terragrunt run-all destroy` as it will DESTROY ALL INFRASTRUCTURE! 
 
-11. Go to the service sub-folder (`cd service`)
+Instead, run `terragrunt run-all apply -var-file="<insert absolute path to file>/<environment>/tfvars`
 
-12. Run `terragrunt init` and then `terragrunt apply` to set up the App Runner services, paste the copied output into the variable
+This will destroy infrastructure that you have taken out (e.g., an application) while preserving what is still needed.
 
-13. To destroy the infrastructure, go to each folder in reverse (service, apprunner, then infrastructure) and type `terragrunt destroy` 
+## Destroying the infrastructure
+
+To destroy ALL infrastructure, run `terragrunt run-all destroy -var-file="<absolute path to file>/<staging/prod>.tfvars`
 
 ## Restore Snapshot Procedure
 

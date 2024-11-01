@@ -1,6 +1,15 @@
 variables {
   applications = ["announcements", "template"]
   environments = ["dev", "test"]
+  app_env_list = [
+    { app = "announcements", env = "dev" },
+    { app = "announcements", env = "test" },
+    { app = "template", env = "dev" },
+    { app = "template", env = "test" },
+  ]
+  is_tofu_test = true
+  passwords    = ["anndev", "anntest", "tempdev", "temptest"]
+  instance_pw  = "test"
 }
 
 run "vpc_dns" {
@@ -77,7 +86,7 @@ run "null_resource_runs" {
 run "check_database_creation" {
   assert {
     # Check that the database creation result file exists and contains the expected output
-    condition     = alltrue([for combo in module.appenvlist.app_env_list : fileexists("/tmp/db_check_${combo.app}_${combo.env}.txt") && length(fileset("/tmp", "db_check_${combo.app}_${combo.env}.txt")) > 0])
+    condition     = alltrue([for combo in var.app_env_list : fileexists("/tmp/db_check_${combo.app}_${combo.env}.txt") && length(fileset("/tmp", "db_check_${combo.app}_${combo.env}.txt")) > 0])
     error_message = "Database creation verification failed for one or more environments."
   }
 }
