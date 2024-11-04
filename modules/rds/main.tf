@@ -1,8 +1,22 @@
+####################################################################
+# main.tf                                           		   #
+####################################################################
+# Creates necessary AWS infrastructure for an RDS MySQL instance.  #
+####################################################################
+
+####################################################################
+# VPC   							   #
+####################################################################
+
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 }
+
+###################################################################
+# Subnets and subnet group                                        #
+###################################################################
 
 resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
@@ -23,6 +37,10 @@ resource "aws_db_subnet_group" "default" {
   subnet_ids = [aws_subnet.main.id, aws_subnet.alternative.id]
 }
 
+################################################################
+# Security group 					       #
+################################################################                    
+
 resource "aws_security_group" "rds_secgrp" {
   vpc_id = aws_vpc.main.id
 
@@ -41,9 +59,17 @@ resource "aws_security_group" "rds_secgrp" {
   }
 }
 
+##################################################################
+# Internet Gateway                                               #
+##################################################################
+
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 }
+
+#################################################################
+# Route table and associations                                  #
+#################################################################
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
@@ -64,16 +90,19 @@ resource "aws_route_table_association" "alt_subnet_association" {
   route_table_id = aws_route_table.public.id
 }
 
-locals {
-  timestamp           = timestamp()
-  timestamp_sanitized = replace("${local.timestamp}", "/[-| |T|Z|:]/", "")
-}
+################################################################
+# Random password for tofu test db                             #
+################################################################
 
 resource "random_password" "password" {
   length           = 16
   special          = true
   override_special = "#&*=+:?"
 }
+
+###############################################################
+# RDS instance, app DBs, users, and permission grants         #
+###############################################################
 
 resource "aws_db_instance" "default" {
   identifier        = "cm-appfolio-db"
@@ -101,12 +130,6 @@ resource "aws_db_instance" "default" {
 
 }
 
-provider "mysql" {
-  endpoint = aws_db_instance.default.address
-  username = aws_db_instance.default.username
-  password = aws_db_instance.default.password
-}
-
 resource "mysql_database" "databases" {
   for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
   name     = each.key
@@ -132,7 +155,11 @@ resource "mysql_grant" "appgrants" {
   privileges = ["ALL"]
 }
 
-resource "null_resource" "create_databases" {
+###############################################################
+# Resource to tofu test if databases were created             #
+###############################################################
+
+resource "null_resource" "check_databases" {
   for_each = {
     for idx, combo in var.app_env_list :
     "${combo.app}-${combo.env}" => {
