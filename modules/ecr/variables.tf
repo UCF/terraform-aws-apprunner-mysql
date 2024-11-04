@@ -3,6 +3,7 @@ variable "app_env_list" {
     app = string
     env = string
   }))
+  description = "The App-Env List imported from the appenvlist module"
 }
 
 variable "should_force_delete" {
