@@ -1,13 +1,3 @@
-provider "aws" {
-  region = var.region
-}
-
-locals {
-  # Timestamps for uniqueness of database snapshot names to prevent apply failure
-  timestamp           = timestamp()
-  timestamp_sanitized = replace("${local.timestamp}", "/[-| |T|Z|:]/", "")
-}
-
 resource "aws_ecr_repository" "repositories" {
   for_each = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 
