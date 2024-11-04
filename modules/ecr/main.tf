@@ -2,12 +2,13 @@ resource "aws_ecr_repository" "repositories" {
   for_each = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 
   name         = "${each.value.app}-${each.value.env}"
-  force_delete = true
+  force_delete = var.should_force_delete
 }
 
 resource "null_resource" "push_default_image" {
   for_each = aws_ecr_repository.repositories
 
+# TODO: Create podman provider and rewrite this section 
   provisioner "local-exec" {
     command = <<EOT
 	#Pull default image (nginx)
@@ -27,6 +28,7 @@ resource "null_resource" "push_default_image" {
   depends_on = [aws_ecr_repository.repositories]
 }
 
+# If this does not work on Windows, use WSL to guarantee /tmp/ folder is available
 resource "null_resource" "check_ecr_images" {
   for_each = { for repo in aws_ecr_repository.repositories : repo.name => repo }
 
