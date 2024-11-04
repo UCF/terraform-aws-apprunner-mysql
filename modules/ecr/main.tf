@@ -12,7 +12,7 @@ resource "aws_ecr_repository" "repositories" {
 
   name         = "${each.value.app}-${each.value.env}"
   force_delete = var.should_force_delete
-  
+
   encryption_configuration {
     encryption_type = "AES256"
   }
@@ -26,15 +26,15 @@ resource "aws_ecr_repository_policy" "repositories_policy" {
   repository = each.value.name
 
   policy = jsonencode({
-    version = "2012-10-17"
-    statement = [
+    Version = "2012-10-17"
+    Statement = [
       {
-        sid       = "AllowPushPull"
-        effect    = "Allow"
-        principal = {
-          type        = "*"
+        Sid    = "AllowPushPull"
+        Effect = "Allow"
+        Principal = {
+          AWS = "*"
         }
-        actions = [
+        Action = [
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage",
           "ecr:BatchCheckLayerAvailability",
