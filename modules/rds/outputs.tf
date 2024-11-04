@@ -2,8 +2,6 @@ output "rds_endpoint" {
   value = aws_db_instance.default.endpoint
 }
 
-output "db_password" {
-  value     = resource.aws_db_instance.default.password
-  sensitive = true
+output "vpc_connector_arn" {
+  value = aws_apprunner_vpc_connector.app_vpc_connector.arn
 }
-
