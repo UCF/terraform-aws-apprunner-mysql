@@ -12,7 +12,40 @@ resource "aws_ecr_repository" "repositories" {
 
   name         = "${each.value.app}-${each.value.env}"
   force_delete = var.should_force_delete
+  
+  encryption_configuration {
+    encryption_type = "AES256"
+  }
 }
+
+# Permissions to comply with terrascan
+
+resource "aws_ecr_repository_policy" "repositories_policy" {
+  for_each = aws_ecr_repository.repositories
+
+  repository = each.value.name
+
+  policy = jsonencode({
+    version = "2012-10-17"
+    statement = [
+      {
+        sid       = "AllowPushPull"
+        effect    = "Allow"
+        principal = {
+          type        = "*"
+        }
+        actions = [
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:PutImage"
+        ]
+      }
+    ]
+  })
+}
+
+
 
 #############################################################
 # Create default images to push to repos and local file     #
