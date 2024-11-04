@@ -1,6 +1,6 @@
 # ECR Repositories based on App-Env List combination
 
-This module uses the appenvlist module in order to spin up a number of ECR repositories based on the application names and environment names fed to the first appenvlist module.
+This module uses the appenvlist module in order to spin up a number of ECR repositories based on the application names and environment names fed to the first appenvlist module. Note that the Terraform terquirement refers to the OpenTofu version required.
 
 
 <-- BEGIN TF DOCS -->
