@@ -1,9 +1,23 @@
+##############################################################
+# main.tf                                                    #
+##############################################################
+
+
+##############################################################
+# ECR Resources                                              #
+##############################################################
+
 resource "aws_ecr_repository" "repositories" {
   for_each = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 
   name         = "${each.value.app}-${each.value.env}"
   force_delete = var.should_force_delete
 }
+
+#############################################################
+# Create default images to push to repos and local file     #
+# for checking if those images were pushed successfully     #
+#############################################################
 
 resource "null_resource" "push_default_image" {
   for_each = aws_ecr_repository.repositories
