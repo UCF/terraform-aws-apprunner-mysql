@@ -22,7 +22,7 @@ resource "aws_ecr_repository" "repositories" {
 resource "null_resource" "push_default_image" {
   for_each = aws_ecr_repository.repositories
 
-# TODO: Create podman provider and rewrite this section 
+  # TODO: Create podman provider and rewrite this section 
   provisioner "local-exec" {
     command = <<EOT
 	#Pull default image (nginx)
