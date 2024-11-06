@@ -79,9 +79,10 @@ The following outputs are exported:
 
 ### <a name="output_DNS_records"></a> [DNS\_records](#output\_DNS\_records)
 
-Description: n/a
+Description: CNAME records for setting DNS
 
 ### <a name="output_default_domain"></a> [default\_domain](#output\_default\_domain)
 
-Description: n/a
+Description: The default URL where the service will be hosted.
+
 <--END TF DOCS-->
