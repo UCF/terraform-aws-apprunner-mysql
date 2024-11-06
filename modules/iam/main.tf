@@ -1,27 +1,14 @@
-provider "aws" {
-  region = var.region
-}
+######################################################################################
+# main.tf                                                                            #
+######################################################################################
+# More information on access policies can be found at                                #
+# https://docs.aws.amazon.com/apprunner/latest/dg/security_iam_service-with-iam.html #
+######################################################################################
 
-data "aws_caller_identity" "current" {}
+###################################################################
+# Github and ECR Access Policies                                  #
+###################################################################
 
-resource "aws_iam_role" "apprunner_role" {
-  name = "apprunner-access-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "build.apprunner.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      },
-    ]
-  })
-}
-
-# More information on access policies at https://docs.aws.amazon.com/apprunner/latest/dg/security_iam_service-with-iam.html
 resource "aws_iam_policy" "ecr_access_policy" {
   name = "apprunner-ecr-access-policy"
 
@@ -78,20 +65,20 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
-      type = "Federated"
+      type        = "Federated"
       identifiers = [module.github-oidc.oidc_provider_arn]
     }
     condition {
-      test = "StringLike"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values = ["repo:UCF/*:*"]
+      values   = ["repo:UCF/*:*"]
     }
   }
 }
 
 resource "aws_iam_role" "ecraccess_role" {
   name               = "GitHubAction-AssumeRoleWithAction"
-  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json 
+  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "ecraccess_attach" {
@@ -100,11 +87,32 @@ resource "aws_iam_role_policy_attachment" "ecraccess_attach" {
 }
 
 module "github-oidc" {
-  source = "github.com/terraform-module/terraform-aws-github-oidc-provider"
+  source = "github.com/terraform-module/terraform-aws-github-oidc-provider?ref=v2.2.1"
 
   create_oidc_provider = true
   create_oidc_role     = false
 
   repositories              = ["UCF/*"]
-  oidc_role_attach_policies = ["${aws_iam_policy.github_ecr_access.arn}"]
+  oidc_role_attach_policies = [aws_iam_policy.github_ecr_access.arn]
+}
+
+##############################################################
+# AppRunner access policies                                  #
+##############################################################
+
+resource "aws_iam_role" "apprunner_role" {
+  name = "apprunner-access-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "build.apprunner.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      },
+    ]
+  })
 }
