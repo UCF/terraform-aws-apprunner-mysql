@@ -16,9 +16,9 @@ terraform {
       source  = "hashicorp/aws"
       version = "5.74.0"
     }
-    
+
     mysql = {
-      source = "hashicorp/mysql"
+      source  = "hashicorp/mysql"
       version = "3.0.65"
     }
   }
