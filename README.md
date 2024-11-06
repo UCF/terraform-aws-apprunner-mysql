@@ -23,10 +23,12 @@
 4. Create or place a file called `<environment>.tfvars` (e.g., `prod.tfvars`) and place it in that folder. The file should look like:
 
 ```
-applications = ["announcements"]
+applications = ["announcements", "template"]
 environments = ["dev", "test"]
 
 instance_pw = "supersecretpassword"
+
+passwords = ["passwordforannouncementsdev", "passwordforannouncementstest", "passwordfortempaltedev", "passwordfortemplatetest"]
 ```
 
 [Optional: Run `terragrunt run-all plan -var-file="<insert absolute path to file>/<environment>.tfvars` to see what the changes will be before you apply them]
