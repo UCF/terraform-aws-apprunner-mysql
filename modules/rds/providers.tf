@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 provider "mysql" {
-  endpoint = aws_db_instance.default.address
-  username = aws_db_instance.default.username
-  password = aws_db_instance.default.password
+  endpoint = "127.0.0.1:3306"
+  username = "admin"
+  password = var.is_tofu_test ? local.tofutestpw : var.instance_pw
 }

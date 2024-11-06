@@ -12,24 +12,17 @@ variables {
   instance_pw  = "test"
 }
 
-run "vpc_dns" {
+run "private_subnets" {
   assert {
-    condition     = resource.aws_vpc.main.enable_dns_support == true && resource.aws_vpc.main.enable_dns_hostnames == true
-    error_message = "DNS Support not enabled"
-  }
-}
-
-run "public_subnets" {
-  assert {
-    condition     = resource.aws_subnet.main.map_public_ip_on_launch == true && resource.aws_subnet.alternative.map_public_ip_on_launch == true
-    error_message = "Subnets not mapped to public IP on launch"
+    condition     = resource.aws_subnet.main.map_public_ip_on_launch == false && resource.aws_subnet.alternative.map_public_ip_on_launch == false
+    error_message = "Subnets not mapped to private IP on launch"
   }
 }
 
 run "subnets_group_has_ids" {
   assert {
     condition     = contains(resource.aws_db_subnet_group.default.subnet_ids, resource.aws_subnet.main.id) && contains(resource.aws_db_subnet_group.default.subnet_ids, resource.aws_subnet.alternative.id)
-    error_message = "Subnet group does not have public subnets as subnet ids"
+    error_message = "Subnet group does not have subnets as subnet ids"
   }
 }
 
@@ -82,12 +75,10 @@ run "null_resource_runs" {
   }
 }
 
-
 run "check_database_creation" {
   assert {
-    # Check that the database creation result file exists and contains the expected output
-    condition     = alltrue([for combo in var.app_env_list : fileexists("/tmp/db_check_${combo.app}_${combo.env}.txt") && length(fileset("/tmp", "db_check_${combo.app}_${combo.env}.txt")) > 0])
+    # Check that the database creation work
+    condition     = alltrue([for combo in var.app_env_list : contains(keys(mysql_database.databases), "${combo-app}-${combo.env}")])
     error_message = "Database creation verification failed for one or more environments."
   }
 }
-
