@@ -1,6 +1,6 @@
 # Application-Environment List Flattener
 
-This module outputs a list of objects that combine applications and environments. The list can be used as an input for other modules in order to create environment-specific infrastructure for each application.
+This module outputs a list of objects that combine applications and environments. The list can be used as an input for other modules in order to create environment-specific infrastructure for each application. Note that the terraform requirement below refers to the OpenTofu version used. 
 
 <!-- BEGIN TF DOCS -->
 
