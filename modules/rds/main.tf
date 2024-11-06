@@ -124,6 +124,7 @@ resource "aws_security_group" "rds_secgrp" {
     to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = [aws_vpc.main.cidr_block]
+    security_groups = [aws_security_group.bastion_sg.id]
   }
 
   egress {
@@ -195,8 +196,23 @@ resource "aws_nat_gateway" "nat" {
 }
 
 #################################################################
-# Route table and associations                                  #
+# Route tables and associations                                 #
 #################################################################
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  route_table_id = aws_route_table.public.id
+
+  subnet_id = aws_subnet.nat_subnet.id
+}
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
@@ -266,7 +282,7 @@ resource "mysql_database" "databases" {
 
   provider = mysql
 
-  depends_on = [null_resource.start_ssm_tunnel]
+  depends_on = [null_resource.grant_mysql_permissions]
 }
 
 
@@ -327,7 +343,6 @@ resource "aws_instance" "bastion" {
   subnet_id                   = aws_subnet.nat_subnet.id
   security_groups             = [aws_security_group.bastion_sg.id]
   iam_instance_profile        = aws_iam_instance_profile.session_manager_profile.id
-  associate_public_ip_address = true
 
   tags = {
     Name = "BastionHost"
@@ -362,8 +377,8 @@ resource "null_resource" "start_ssm_tunnel" {
 resource "null_resource" "grant_mysql_permissions" {
   provisioner "local-exec" {
     command = <<EOT
-      mysql -h 127.0.0.1 -P 3306 -u admin -p"${local.db_password}" -e "
-      GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%' WITH GRANT OPTION;
+      mysql -h ${aws_db_instance.default.address} --protocol=tcp -P 3306 -u admin -p"${local.db_password}" -e "
+      GRANT ROLE_ADMIN ON *.* TO 'admin'@'%';
       FLUSH PRIVILEGES;"
     EOT
   }
@@ -381,7 +396,7 @@ resource "null_resource" "stop_ssm_tunnel" {
 
 resource "null_resource" "clean_up" {
   provisioner "local-exec" {
-    command = "terraform destroy -target=aws_instance.bastion -target=aws_security_group.bastion_sg -target=aws_iam_role.session_manager_role -target=aws_iam_instance_profile.session_manager_profile -target=aws_iam_role_policy_attachment.session_manager_attachment -auto-approve"
+    command = "tofu destroy -target=aws_instance.bastion -target=aws_security_group.bastion_sg -target=aws_iam_role.session_manager_role -target=aws_iam_instance_profile.session_manager_profile -target=aws_iam_role_policy_attachment.session_manager_attachment -auto-approve"
   }
 
   depends_on = [
