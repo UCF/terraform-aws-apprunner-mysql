@@ -1,10 +1,10 @@
 variables {
-  region       = "us-east-1"
-  app_env_list = [{ app = "announcements", env = "dev"},
-                    { app = "announcements", env = "test"},
-                    { app = "template", env = "dev"},
-                    { app = "template", env = "test"},
-                 ]
+  region = "us-east-1"
+  app_env_list = [{ app = "announcements", env = "dev" },
+    { app = "announcements", env = "test" },
+    { app = "template", env = "dev" },
+    { app = "template", env = "test" },
+  ]
 }
 
 run "test2by2" {
