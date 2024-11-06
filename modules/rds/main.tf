@@ -131,6 +131,8 @@ resource "aws_db_instance" "default" {
 resource "mysql_database" "databases" {
   for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
   name     = each.key
+
+  depends_on = [aws_db_instance.default]
 }
 
 resource "mysql_user" "appusers" {
@@ -143,14 +145,19 @@ resource "mysql_user" "appusers" {
   }
   user               = each.key
   plaintext_password = each.value.password
+  host               = "%"
+
+  depends_on = [mysql_database.databases]
 }
 
 resource "mysql_grant" "appgrants" {
   for_each   = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
   user       = each.key
-  host       = aws_db_instance.default.address
+  host       = "%"
   database   = each.key
   privileges = ["ALL"]
+
+  depends_on = [mysql_user.appusers]
 }
 
 resource "null_resource" "check_databases" {
@@ -167,7 +174,7 @@ resource "null_resource" "check_databases" {
     command = <<EOT
 
     # Check if the database exists and write the result to a temp file
-    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "SHOW DATABASES LIKE \`${each.key}\`;" > /tmp/db_check_${each.key}.txt 
+    mysql -h ${aws_db_instance.default.address} -P 3306 -uadmin -p'${aws_db_instance.default.password}' -e "SHOW DATABASES LIKE '${each.key}';" > /tmp/db_check_${each.key}.txt 
     EOT 
   }
 
