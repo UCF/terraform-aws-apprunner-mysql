@@ -41,7 +41,7 @@ passwords = ["passwordforannouncementsdev", "passwordforannouncementstest", "pas
 
 7. It is now necessary to push a container image to the ECR repository with the correct database url attached. To do so, change the `[ENV]_DATABASE_URL` secret in the app's Github Actions secret to a string of the form:
 
-`mysql://admin:<outputted tofu password>@<DB Endpoint>:3306/<appname>-<envname>`
+`mysql://<appname>-<envname>:<inputted password>@<DB Endpoint>:3306/<appname>-<envname>`
 
 8. Commit a change to the `stages/dev` branch, for example, of the app repository so Github Actions can send the container image to ECR where App Runner will pull it from.
 
