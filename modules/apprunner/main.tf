@@ -1,8 +1,16 @@
-provider "aws" {
-  region = var.region 
-}
+#######################
+# main.tf             #
+#######################
+
+###########################################
+# Current account data                    #
+###########################################
 
 data "aws_caller_identity" "current" {}
+
+###########################################
+# AppRunner services                      #
+###########################################
 
 resource "aws_apprunner_service" "app_services" {
   for_each = toset(var.ecr_repo_names)
@@ -37,10 +45,6 @@ resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
   max_concurrency = 100
   max_size        = 3
   min_size        = 1
-}
-
-locals {
-  app_env_map = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 }
 
 resource "aws_apprunner_custom_domain_association" "domains" {

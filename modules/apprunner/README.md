@@ -2,39 +2,87 @@
 
 This module creates AppRunner services in AWS. Podman is required to run `tofu test`. Ensure `podman machine init` and `podman machine start` have been commanded before running `tofu test`. Furthermore, the ECR and IAM modules must be applied for these tests to work.
 
+<--BEGIN TF DOCS-->
 ## Requirements
 
-No requirements.
+The following requirements are needed by this module:
+
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.8.3)
+
+- <a name="requirement_aws"></a> [aws](#requirement\_aws) (5.73.0)
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.72.1 |
+The following providers are used by this module:
+
+- <a name="provider_aws"></a> [aws](#provider\_aws) (5.73.0)
 
 ## Modules
 
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_ecr"></a> [ecr](#module\_ecr) | ../ecr | n/a |
-| <a name="module_iam"></a> [iam](#module\_iam) | ../iam | n/a |
+No modules.
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| [aws_apprunner_auto_scaling_configuration_version.app_scaling](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apprunner_auto_scaling_configuration_version) | resource |
-| [aws_apprunner_service.app_services](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apprunner_service) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+The following resources are used by this module:
 
-## Inputs
+- [aws_apprunner_auto_scaling_configuration_version.app_scaling](https://registry.terraform.io/providers/hashicorp/aws/5.73.0/docs/resources/apprunner_auto_scaling_configuration_version) (resource)
+- [aws_apprunner_custom_domain_association.domains](https://registry.terraform.io/providers/hashicorp/aws/5.73.0/docs/resources/apprunner_custom_domain_association) (resource)
+- [aws_apprunner_service.app_services](https://registry.terraform.io/providers/hashicorp/aws/5.73.0/docs/resources/apprunner_service) (resource)
+- [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.73.0/docs/data-sources/caller_identity) (data source)
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_applications"></a> [applications](#input\_applications) | A list of available applications | `list(string)` | n/a | yes |
-| <a name="input_environments"></a> [environments](#input\_environments) | A list of available environments | `list(string)` | n/a | yes |
-| <a name="input_is_tofu_test_environment"></a> [is\_tofu\_test\_environment](#input\_is\_tofu\_test\_environment) | Determines if Tofu Test environment is active | `bool` | `false` | no |
+## Required Inputs
+
+The following input variables are required:
+
+### <a name="input_app_env_list"></a> [app\_env\_list](#input\_app\_env\_list)
+
+Description: n/a
+
+Type:
+
+```hcl
+list(object({
+    app = string
+    env = string
+  }))
+```
+
+### <a name="input_ecr_repo_names"></a> [ecr\_repo\_names](#input\_ecr\_repo\_names)
+
+Description: n/a
+
+Type: `list(string)`
+
+## Optional Inputs
+
+The following input variables are optional (have default values):
+
+### <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"cm.ucf.edu"`
+
+### <a name="input_region"></a> [region](#input\_region)
+
+Description: n/a
+
+Type: `string`
+
+Default: `"us-east-1"`
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_DNS_records"></a> [DNS\_records](#output\_DNS\_records)
+
+Description: CNAME records for setting DNS
+
+### <a name="output_default_domain"></a> [default\_domain](#output\_default\_domain)
+
+Description: The default URL where the service will be hosted.
+
+<--END TF DOCS-->
