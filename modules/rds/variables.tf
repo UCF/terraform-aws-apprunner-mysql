@@ -26,16 +26,6 @@ variable "db_skip_final_snapshot" {
   default     = false
 }
 
-variable "applications" {
-  type        = list(string)
-  description = "A list of applications to run"
-}
-
-variable "environments" {
-  type        = list(string)
-  description = "A list of environments to run applications in"
-}
-
 variable "app_env_list" {
   type = list(object({
     app = string

@@ -1,12 +1,20 @@
-provider "aws" {
-  region = var.region
-}
+###############################################
+# main.tf                                     #
+###############################################
+
+###############################################
+# VPC                                         #
+###############################################
 
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 }
+
+##############################################
+# Subnets and subnet group                   #
+##############################################
 
 resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
@@ -27,6 +35,10 @@ resource "aws_db_subnet_group" "default" {
   subnet_ids = [aws_subnet.main.id, aws_subnet.alternative.id]
 }
 
+######################################################
+# Security group                                     #
+######################################################
+
 resource "aws_security_group" "rds_secgrp" {
   vpc_id = aws_vpc.main.id
 
@@ -45,9 +57,17 @@ resource "aws_security_group" "rds_secgrp" {
   }
 }
 
+##############################################################
+# Internet gateway                                           #
+##############################################################
+
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 }
+
+#############################################################
+# Route table and associations                              #
+#############################################################
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
@@ -68,16 +88,19 @@ resource "aws_route_table_association" "alt_subnet_association" {
   route_table_id = aws_route_table.public.id
 }
 
-locals {
-  timestamp           = timestamp()
-  timestamp_sanitized = replace("${local.timestamp}", "/[-| |T|Z|:]/", "")
-}
+###########################################################
+# Random password for tofu test                           #
+###########################################################
 
 resource "random_password" "password" {
   length           = 16
   special          = true
   override_special = "#&*=+:?"
 }
+
+##########################################################
+# RDS instance                                           #
+##########################################################
 
 resource "aws_db_instance" "default" {
   identifier        = "cm-appfolio-db"
@@ -96,19 +119,13 @@ resource "aws_db_instance" "default" {
 
   # snapshot_identifier = [insert snapshot to rebuild db from]
 
-  vpc_security_group_ids = ["${aws_security_group.rds_secgrp.id}"]
+  vpc_security_group_ids = [aws_security_group.rds_secgrp.id]
   db_subnet_group_name   = aws_db_subnet_group.default.name
 
   backup_retention_period = 7
   backup_window           = "12:45-01:15"
   maintenance_window      = "sun:05:00-sun:06:00"
 
-}
-
-provider "mysql" {
-  endpoint = aws_db_instance.default.address
-  username = aws_db_instance.default.username
-  password = aws_db_instance.default.password
 }
 
 resource "mysql_database" "databases" {
@@ -136,7 +153,7 @@ resource "mysql_grant" "appgrants" {
   privileges = ["ALL"]
 }
 
-resource "null_resource" "create_databases" {
+resource "null_resource" "check_databases" {
   for_each = {
     for idx, combo in var.app_env_list :
     "${combo.app}-${combo.env}" => {
