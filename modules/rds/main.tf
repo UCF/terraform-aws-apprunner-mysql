@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "flow_logs_policy_attachment" {
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
-  name              = "/aws/vpc/flow-logs-${local.timestamp_sanitized}"
+  name              = "/aws/vpc/flow-logs-${aws_vpc.main.id}"
   retention_in_days = 30
 }
 
@@ -85,54 +85,27 @@ resource "aws_db_subnet_group" "default" {
   subnet_ids = [aws_subnet.main.id, aws_subnet.alternative.id]
 }
 
-resource "aws_network_acl" "private_nacl" {
-  vpc_id     = aws_vpc.main.id
-  subnet_ids = [aws_subnet.main.id, aws_subnet.alternative.id] # Associates with main and alternative subnets
-}
-
-resource "aws_network_acl_rule" "allow_mysql_inbound" {
-  network_acl_id = aws_network_acl.private_nacl.id
-  rule_number    = 100
-  protocol       = "tcp"
-  rule_action    = "allow"
-  cidr_block     = aws_vpc.main.cidr_block
-  from_port      = 3306
-  to_port        = 3306
-  egress         = false
-}
-
-resource "aws_network_acl_rule" "allow_mysql_outbound" {
-  network_acl_id = aws_network_acl.private_nacl.id
-  rule_number    = 100
-  protocol       = "tcp"
-  rule_action    = "allow"
-  cidr_block     = aws_vpc.main.cidr_block
-  from_port      = 3306
-  to_port        = 3306
-  egress         = true
-}
-
 ################################################################
 # Security groups 					       #
 ################################################################                    
 
 resource "aws_security_group" "rds_secgrp" {
   vpc_id = aws_vpc.main.id
-
-  ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
-    security_groups = [aws_security_group.bastion_sg.id]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "rds_secgrp_ingress" {
+  type              = "ingress"
+  from_port         = 3306
+  to_port           = 3306
+  protocol          = "tcp"
+  cidr_blocks       = [aws_vpc.main.cidr_block]
+  security_group_id = aws_security_group.bastion_sg.id
 }
 
 data "external" "ip" {
@@ -142,19 +115,21 @@ data "external" "ip" {
 resource "aws_security_group" "bastion_sg" {
   vpc_id = aws_vpc.main.id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["${data.external.ip.result["ip"]}/32"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "bastion_ingress" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["${data.external.ip.result["ip"]}/32"]
+  security_group_id = aws_security_group.bastion_sg.id
 }
 
 resource "aws_security_group" "apprunner_sg" {
@@ -219,7 +194,7 @@ resource "aws_route_table" "private" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.nat.id
+    nat_gateway_id = aws_nat_gateway.nat.id
   }
 }
 
@@ -263,7 +238,7 @@ resource "aws_db_instance" "default" {
 
   deletion_protection       = var.db_deletion_protection
   skip_final_snapshot       = var.db_skip_final_snapshot
-  final_snapshot_identifier = "db-snapshot-${local.timestamp_sanitized}"
+  final_snapshot_identifier = "final-db-snapshot-cm-appfolio-db"
 
   # snapshot_identifier = [insert snapshot to rebuild db from]
 
@@ -278,11 +253,10 @@ resource "aws_db_instance" "default" {
 
 resource "mysql_database" "databases" {
   for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
-  name     = each.key
 
-  provider = mysql
+  name = each.key
 
-  depends_on = [null_resource.grant_mysql_permissions]
+  depends_on = [null_resource.mysql_perms]
 }
 
 
@@ -301,9 +275,9 @@ resource "mysql_user" "appusers" {
 }
 
 resource "mysql_grant" "appgrants" {
-  for_each   = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+  for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+
   user       = each.key
-  host       = aws_db_instance.default.address
   database   = each.key
   privileges = ["ALL"]
 
@@ -337,11 +311,35 @@ resource "aws_iam_role_policy_attachment" "session_manager_attachment" {
   depends_on = [aws_iam_role.session_manager_role]
 }
 
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+} 
+
 resource "aws_instance" "bastion" {
-  ami                         = "ami-064519b8c76274859"
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t3.micro"
   subnet_id                   = aws_subnet.nat_subnet.id
-  security_groups             = [aws_security_group.bastion_sg.id]
+  vpc_security_group_ids      = [aws_security_group.bastion_sg.id]
   iam_instance_profile        = aws_iam_instance_profile.session_manager_profile.id
 
   tags = {
@@ -360,47 +358,46 @@ resource "aws_iam_instance_profile" "session_manager_profile" {
 # SSH Tunnel Automation for MySQL Provider                         #
 ####################################################################
 
-resource "null_resource" "start_ssm_tunnel" {
+resource "null_resource" "mysql_perms" {
+  triggers = {
+    db_id = aws_db_instance.default.id
+  }
+
   provisioner "local-exec" {
     command = <<EOT
       nohup aws ssm start-session \
         --target ${aws_instance.bastion.id} \
-        --document-name AWS-StartPortForwardingSession \
-        --parameters '{"portNumber":["3306"],"localPortNumber":["3306"]}' \
+        --document-name AWS-StartPortForwardingSessionToRemoteHost \
+        --parameters '{"host":["${aws_db_instance.default.address}"],"portNumber":["3306"], "localPortNumber":["3307"]}' \
         > /tmp/ssm-tunnel.log 2>&1 &
+    EOT
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      mysql -h 127.0.0.1 --protocol=tcp -P 3307 -u admin -p"${local.db_password}" -e "
+      GRANT ROLE_ADMIN ON *.* TO 'admin'@'%';
+      FLUSH PRIVILEGES;"
     EOT
   }
 
   depends_on = [aws_db_instance.default, aws_instance.bastion]
 }
 
-resource "null_resource" "grant_mysql_permissions" {
-  provisioner "local-exec" {
-    command = <<EOT
-      mysql -h ${aws_db_instance.default.address} --protocol=tcp -P 3306 -u admin -p"${local.db_password}" -e "
-      GRANT ROLE_ADMIN ON *.* TO 'admin'@'%';
-      FLUSH PRIVILEGES;"
-    EOT
+resource "null_resource" "cleanup" {
+
+  triggers = {
+    null_resource_id = null_resource.mysql_perms.id
   }
 
-  depends_on = [null_resource.start_ssm_tunnel]
-}
-
-resource "null_resource" "stop_ssm_tunnel" {
   provisioner "local-exec" {
-    command = "pkill -f 'aws ssm start-session --target ${aws_instance.bastion.id}'"
+    command = "pkill -f session-manager-plugin"
   }
 
-  depends_on = [mysql_grant.appgrants]
+  # Can't do this because we have the state locked.
+  # provisioner "local-exec" {
+  #   command = "tofu destroy -target=aws_instance.bastion -target=aws_security_group.bastion_sg -target=aws_iam_role.session_manager_role -target=aws_iam_instance_profile.session_manager_profile -target=aws_iam_role_policy_attachment.session_manager_attachment -auto-approve"
+  # }
+
+  depends_on = [ mysql_grant.appgrants ]
 }
-
-resource "null_resource" "clean_up" {
-  provisioner "local-exec" {
-    command = "tofu destroy -target=aws_instance.bastion -target=aws_security_group.bastion_sg -target=aws_iam_role.session_manager_role -target=aws_iam_instance_profile.session_manager_profile -target=aws_iam_role_policy_attachment.session_manager_attachment -auto-approve"
-  }
-
-  depends_on = [
-    null_resource.stop_ssm_tunnel
-  ]
-}
-
