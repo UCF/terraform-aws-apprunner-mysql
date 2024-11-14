@@ -27,8 +27,8 @@ terraform {
     }
 
     mysql = {
-      source  = "hashicorp/mysql"
-      version = "1.9.0"
+      source  = "petoju/mysql"
+      version = "3.0.66"
     }
   }
 }
