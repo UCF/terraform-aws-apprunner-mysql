@@ -8,6 +8,15 @@ include {
 
 dependency "appenvlist" {
   config_path = "../appenvlist"
+  mock_outputs_allowed_terraform_commands = ["plan"]
+  mock_outputs = {
+    app_env_list = [
+      { app = "announcements", env = "dev" },
+      { app = "announcements", env = "test" },
+      { app = "template", env = "dev" },
+      { app = "template", env = "test" },
+    ]
+  }
 }
 
 inputs = {
