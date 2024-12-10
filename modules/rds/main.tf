@@ -104,7 +104,7 @@ resource "aws_security_group_rule" "rds_secgrp_ingress" {
   from_port         = 3306
   to_port           = 3306
   protocol          = "tcp"
-  cidr_blocks       = [aws_vpc.main.cidr_block]
+  cidr_blocks       = [aws_subnet.main.cidr_block, aws_subnet.alternative.cidr_block]
   security_group_id = aws_security_group.bastion_sg.id
 }
 
