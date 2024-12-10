@@ -105,7 +105,8 @@ resource "aws_security_group_rule" "rds_secgrp_ingress" {
   to_port           = 3306
   protocol          = "tcp"
   cidr_blocks       = [aws_subnet.main.cidr_block, aws_subnet.alternative.cidr_block]
-  security_group_id = aws_security_group.bastion_sg.id
+  source_security_group_id = aws_security_group.bastion_sg.id
+  security_group_id = aws_security_group.rds_secgrp.id
 }
 
 data "external" "ip" {
@@ -363,36 +364,34 @@ resource "null_resource" "mysql_perms" {
     db_id = aws_db_instance.default.id
   }
 
-  provisioner "local-exec" {
-    command = <<EOT
-      nohup aws ssm start-session \
-        --target ${aws_instance.bastion.id} \
-        --document-name AWS-StartPortForwardingSessionToRemoteHost \
-        --parameters '{"host":["${aws_db_instance.default.address}"],"portNumber":["3306"], "localPortNumber":["3307"]}' \
-        > /tmp/ssm-tunnel.log 2>&1 &
-    EOT
+  connection {
+    type = "ssh"
+    user = "root"
+    password = var.instance_pw
+    host = aws_instance.bastion.public_ip
   }
 
-  provisioner "local-exec" {
-    command = <<EOT
-      mysql -h 127.0.0.1 --protocol=tcp -P 3307 -u admin -p"${local.db_password}" -e "
-      GRANT ROLE_ADMIN ON *.* TO 'admin'@'%';
-      FLUSH PRIVILEGES;"
-    EOT
+  provisioner "remote-exec" {
+    inline = [
+      "<<EOT",
+      "nohup aws ssm start-session \n",
+        "--target ${aws_instance.bastion.id} \n",
+        "--document-name AWS-StartPortForwardingSessionToRemoteHost \n",
+        "--parameters '{\"host\":[\"${aws_db_instance.default.address}\"],\"portNumber\":[\"3306\"], \"localPortNumber\":[\"3306\"]}' \n",
+        "> /tmp/ssm-tunnel.log 2>&1 &",
+      "EOT",
+    ]
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "<<EOT",
+      "mysql -h 127.0.0.1 --protocol=tcp -P 3307 -u admin -p\"${local.db_password}\" \n",
+      "-e \"GRANT ROLE_ADMIN ON *.* TO 'admin'@'%'; FLUSH PRIVILEGES;\"\n",
+      "EOT",
+    ]
   }
 
   depends_on = [aws_db_instance.default, aws_instance.bastion]
 }
 
-resource "null_resource" "cleanup" {
-
-  triggers = {
-    null_resource_id = null_resource.mysql_perms.id
-  }
-
-  provisioner "local-exec" {
-    command = "pkill -f session-manager-plugin"
-  }
-
-  depends_on = [ mysql_grant.appgrants ]
-}

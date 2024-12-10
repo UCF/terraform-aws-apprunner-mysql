@@ -68,7 +68,7 @@ resource "null_resource" "push_default_image" {
 	aws ecr get-login-password --region us-east-1 | podman login --username AWS --password-stdin ${each.value.repository_url}
 
 	# Push the image to ECR
-	podman push ${each.value.repository_url}:latest
+	podman push ${each.value.repository_url}:${local.timestamp_sanitized}
       EOT
   }
 

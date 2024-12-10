@@ -39,5 +39,6 @@ dependency "iam" {
 
 inputs = {
   ecr_repo_names = dependency.ecr.outputs.ecr_repo_names
+  ecr_timestamp = dependency.ecr.outputs.ecr_timestamp
   app_env_list = dependency.appenvlist.outputs.app_env_list
 }
