@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 provider "mysql" {
-  endpoint = "127.0.0.1:3307"
+  endpoint = aws_instance.bastion.public_ip
   username = "admin"
   password = var.is_tofu_test ? local.tofutestpw : var.instance_pw
 }
