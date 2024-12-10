@@ -394,10 +394,5 @@ resource "null_resource" "cleanup" {
     command = "pkill -f session-manager-plugin"
   }
 
-  # Can't do this because we have the state locked.
-  # provisioner "local-exec" {
-  #   command = "tofu destroy -target=aws_instance.bastion -target=aws_security_group.bastion_sg -target=aws_iam_role.session_manager_role -target=aws_iam_instance_profile.session_manager_profile -target=aws_iam_role_policy_attachment.session_manager_attachment -auto-approve"
-  # }
-
   depends_on = [ mysql_grant.appgrants ]
 }
