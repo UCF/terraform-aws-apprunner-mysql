@@ -11,3 +11,8 @@ variable "should_force_delete" {
   description = "Determines if ECR repositories should be force-deleted on teardown. Should be false for production"
   default     = true
 }
+
+variable "region" {
+  type = string
+  default = "us-east-1"
+}
