@@ -104,7 +104,6 @@ resource "aws_security_group_rule" "rds_secgrp_ingress" {
   from_port         = 3306
   to_port           = 3306
   protocol          = "tcp"
-  cidr_blocks       = [aws_subnet.main.cidr_block, aws_subnet.alternative.cidr_block]
   source_security_group_id = aws_security_group.bastion_sg.id
   security_group_id = aws_security_group.rds_secgrp.id
 }
@@ -252,12 +251,18 @@ resource "aws_db_instance" "default" {
 
 }
 
+resource "mysql_grant" "admingrant" {
+  user = "admin"
+  database = "*"
+  privileges = ["ALL"]
+}
+
 resource "mysql_database" "databases" {
   for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 
   name = each.key
 
-  depends_on = [null_resource.mysql_perms]
+  depends_on = [mysql_grant.admingrant]
 }
 
 
@@ -282,7 +287,7 @@ resource "mysql_grant" "appgrants" {
   database   = each.key
   privileges = ["ALL"]
 
-  depends_on = [mysql_user.appusers]
+  depends_on = [mysql_grant.admingrant]
 }
 
 
@@ -358,40 +363,3 @@ resource "aws_iam_instance_profile" "session_manager_profile" {
 ####################################################################
 # SSH Tunnel Automation for MySQL Provider                         #
 ####################################################################
-
-resource "null_resource" "mysql_perms" {
-  triggers = {
-    db_id = aws_db_instance.default.id
-  }
-
-  connection {
-    type = "ssh"
-    user = "root"
-    password = var.instance_pw
-    host = aws_instance.bastion.public_ip
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "<<EOT",
-      "nohup aws ssm start-session \n",
-        "--target ${aws_instance.bastion.id} \n",
-        "--document-name AWS-StartPortForwardingSessionToRemoteHost \n",
-        "--parameters '{\"host\":[\"${aws_db_instance.default.address}\"],\"portNumber\":[\"3306\"], \"localPortNumber\":[\"3306\"]}' \n",
-        "> /tmp/ssm-tunnel.log 2>&1 &",
-      "EOT",
-    ]
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "<<EOT",
-      "mysql -h 127.0.0.1 --protocol=tcp -P 3307 -u admin -p\"${local.db_password}\" \n",
-      "-e \"GRANT ROLE_ADMIN ON *.* TO 'admin'@'%'; FLUSH PRIVILEGES;\"\n",
-      "EOT",
-    ]
-  }
-
-  depends_on = [aws_db_instance.default, aws_instance.bastion]
-}
-
