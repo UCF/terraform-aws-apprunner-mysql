@@ -37,19 +37,3 @@ variable "passwords" {
   type        = list(string)
   description = "The passwords for each database"
 }
-
-variable "rds_secgrp_id" {
-  type = string
-}
-
-variable "db_sg_name" {
-  type = string
-}
-
-variable "bastion_sg_id" {
-  type = string
-}
-
-variable "subnet_id" {
-  type = string
-}

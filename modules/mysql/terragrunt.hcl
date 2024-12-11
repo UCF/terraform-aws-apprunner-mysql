@@ -1,5 +1,5 @@
 terraform {
-  source = "."
+  source = "." 
 }
 
 include {
@@ -19,6 +19,17 @@ dependency "appenvlist" {
   }
 }
 
+dependency "rds" {
+  config_path = "../rds"
+  mock_outputs_allowed_terraform_commands = ["init", "plan", "destroy"]
+  mock_outputs = {
+    bastion_instance_id = "123"
+    rds_endpoint = "123"
+  }
+}
+
 inputs = {
   app_env_list = dependency.appenvlist.outputs.app_env_list
+  bastion_instance_id = dependency.rds.outputs.bastion_instance_id
+  rds_endpoint = dependency.rds.outputs.rds_endpoint
 }

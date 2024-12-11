@@ -38,18 +38,10 @@ variable "passwords" {
   description = "The passwords for each database"
 }
 
-variable "rds_secgrp_id" {
+variable "bastion_instance_id" {
   type = string
 }
 
-variable "db_sg_name" {
-  type = string
-}
-
-variable "bastion_sg_id" {
-  type = string
-}
-
-variable "subnet_id" {
+variable "rds_endpoint" {
   type = string
 }
