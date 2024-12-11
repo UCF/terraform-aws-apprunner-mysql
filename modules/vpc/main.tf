@@ -125,8 +125,8 @@ resource "aws_security_group" "bastion_sg" {
 
 resource "aws_security_group_rule" "bastion_ingress" {
   type              = "ingress"
-  from_port         = 22
-  to_port           = 22
+  from_port         = 6
+  to_port           = 6
   protocol          = "tcp"
   cidr_blocks       = ["${data.external.ip.result["ip"]}/32"]
   security_group_id = aws_security_group.bastion_sg.id
