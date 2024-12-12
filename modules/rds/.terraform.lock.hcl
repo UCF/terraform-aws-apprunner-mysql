@@ -66,6 +66,7 @@ provider "registry.opentofu.org/petoju/mysql" {
   constraints = "3.0.66"
   hashes = [
     "h1:aZH2+lLNqPthvjAabxt6yPdwjeIBFuldyEzmCJ+Mk7k=",
+    "h1:bREzHKCntNA2dFqsdqMJL5PzgA6FaKaVy+ur00rUKVs=",
     "h1:bs8uyN/VEhlS3AVNH3W2XEnLwmWBd/S3RtnpN/A4yTU=",
     "zh:0c7e62f40e87e6a63db432f89676e07c7adcbb94256cd7da532d64276129577a",
     "zh:0d74dfe34c427b12ac1250807facdaba60e28a126c59d492ab5222fdd009ca76",

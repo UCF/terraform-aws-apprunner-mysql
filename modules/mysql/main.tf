@@ -8,11 +8,12 @@
 resource "null_resource" "ssm_tunnel" {
   provisioner "local-exec" {
     command = <<EOT
-      aws ssm start-session \
+      nohup aws ssm start-session \
         --target ${var.bastion_instance_id} \
         --document-name AWS-StartPortForwardingSession \
-        --region us-east-1
-        --parameters '{"portNumber":["3306"], "localPortNumber":["3306"]}' &
+        --region us-east-1 \
+        --parameters '{"portNumber":["3306"], "localPortNumber":["3306"]}' \
+        > /tmp/ssm-tunnel.log 2>&1 &
       EOT
       }
 
