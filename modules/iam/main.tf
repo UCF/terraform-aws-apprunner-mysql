@@ -1,8 +1,11 @@
-provider "aws" {
-  region = var.region
-}
-
 data "aws_caller_identity" "current" {}
+
+data "aws_iam_policy_document" "apprunner_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]  
+    effect = "Allow"
+  }
+}
 
 resource "aws_iam_role" "apprunner_role" {
   name = "apprunner-access-role"

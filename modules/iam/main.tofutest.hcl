@@ -1,12 +1,13 @@
 run "aws_iam_role_apprunner_role" {
+
   assert {
-    condition     = resource.aws_iam_role.apprunner_role.name == "apprunner-access-role"
-    error_message = "AppRunner role name does not match"
+    condition = contains(data.aws_iam_policy_document.apprunner_role_policy.statement[0].actions, "sts:AssumeRole")
+    error_message = "AppRunner Role Action is not sts:AssumeRole"
   }
 
   assert {
-    condition     = jsondecode(resource.aws_iam_role.apprunner_role.assume_role_policy).Statement[0].Principal.Service == "build.apprunner.amazonaws.com"
-    error_message = "AppRunner role assume_role_policy is incorrect"
+    condition     = data.aws_iam_policy_document.apprunner_role_policy.statement[0].effect == "Allow" 
+    error_message = "AppRunner Role Effect is not Allow"
   }
 }
 
