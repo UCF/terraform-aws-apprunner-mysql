@@ -2,54 +2,45 @@ data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "apprunner_role_policy" {
   statement {
+    principals {
+      type = "Service"
+      identifiers = ["build.apprunner.amazonaws.com"] 
+    }
     actions = ["sts:AssumeRole"]  
     effect = "Allow"
   }
 }
 
 resource "aws_iam_role" "apprunner_role" {
-  name = "apprunner-access-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "build.apprunner.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      },
-    ]
-  })
+ name = "apprunner-access-role"
+ assume_role_policy = data.aws_iam_policy_document.apprunner_role_policy.json 
 }
 
 # More information on access policies at https://docs.aws.amazon.com/apprunner/latest/dg/security_iam_service-with-iam.html
-resource "aws_iam_policy" "ecr_access_policy" {
-  name = "apprunner-ecr-access-policy"
 
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:DescribeImages",
-          "ecr:GetAuthorizationToken",
-        ],
-        Resource = "*"
-      },
+data "aws_iam_policy_document" "ecr_access_policy" {
+  statement {
+    resources = ["*"]
+    actions = [
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:DescribeImages",
+      "ecr:GetAuthorizationToken",
     ]
-  })
+    effect = "Allow"
+  }
+}
+
+resource "aws_iam_policy" "apprunner_ecr_access_policy" {
+  name = "apprunner-ecr-access-policy"
+  policy = data.aws_iam_policy_document.ecr_access_policy.json
 }
 
 
 resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
   role       = aws_iam_role.apprunner_role.name
-  policy_arn = aws_iam_policy.ecr_access_policy.arn
+  policy_arn = aws_iam_policy.apprunner_ecr_access_policy.arn
 }
 
 resource "aws_iam_policy" "github_ecr_access" {
