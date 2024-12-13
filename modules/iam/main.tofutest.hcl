@@ -60,7 +60,7 @@ run "ecr_access_policy_assumes_correct_document" {
   }
 }
 
-run "iam_role_policy_attachments" {
+run "iam_role_policy_has_correct_attachments" {
   assert {
     condition     = resource.aws_iam_role_policy_attachment.apprunner_ecr_policy_attach.role == resource.aws_iam_role.apprunner_role.name
     error_message = "The ECR access policy is not attached to the correct IAM role"
@@ -72,7 +72,7 @@ run "iam_role_policy_attachments" {
   }
 }
 
-run "github_iam" {
+run "github_iam_has_correct_document_and_attachments" {
   assert {
     condition     = jsondecode(resource.aws_iam_policy.github_ecr_access.policy) == jsondecode(data.aws_iam_policy_document.githubecrdoc.json)
     error_message = "Github ECR Access Policy is not the proper policy document."
