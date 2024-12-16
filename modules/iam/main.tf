@@ -148,8 +148,27 @@ resource "aws_iam_role" "session_manager_role" {
 resource "aws_iam_role_policy_attachment" "session_manager_attachment" {
   role = aws_iam_role.session_manager_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" 
-
   depends_on = [aws_iam_role.session_manager_role]
 }
 
- 
+resource "aws_iam_policy" "ssm_start_policy" {
+  name = "ssm-start-session-policy"
+  description = "Policy to start SSM sessions"
+  policy = data.aws_iam_policy_document.ssm_start_policy_document.json 
+} 
+
+resource "aws_iam_role_policy_attachment" "attach_ssm_policy" {
+  role = aws_iam_role.session_manager_role.name
+  policy_arn = aws_iam_policy.ssm_start_policy.arn
+}
+
+resource "aws_iam_instance_profile" "session_manager_profile" {
+  name = "session-manager-profile"
+  role = aws_iam_role.session_manager_role.name
+  depends_on = [aws_iam_role.session_manager_role]
+}
+
+resource "aws_iam_instance_profile" "bastion_ssm_profile" {
+  name = "bastion-ssm-instance-profile"
+  role = aws_iam_role.session_manager_role.name
+}

@@ -161,4 +161,34 @@ run "ssm_start_policy_document_has_correct_statement" {
   }
 }
 
+run "ssm_start_policy_has_proper_document_attached" {
+  assert {
+    condition = jsondecode(resource.aws_iam_policy.ssm_start_policy.policy) == jsondecode(data.aws_iam_policy_document.ssm_start_policy_document.json)
+    error_message = "SSM Start Policy does not have proper document attached"
+  }
+}
+ 
+run "session_manager_role_has_correct_policy_attached" {
+  assert {
+    condition = resource.aws_iam_role_policy_attachment.attach_ssm_policy.role == resource.aws_iam_role.session_manager_role.name
+    error_message = "Session manager role does not have the correct policy attached."
+  }
 
+  assert {
+    condition = resource.aws_iam_role_policy_attachment.attach_ssm_policy.policy_arn == resource.aws_iam_policy.ssm_start_policy.arn
+    error_message = "Session manager role does not have the correct policy_arn to attach."
+  }
+}
+
+run "instance_profiles_have_proper_roles" {
+
+  assert {
+    condition = resource.aws_iam_instance_profile.session_manager_profile.role == resource.aws_iam_role.session_manager_role.name
+    error_message = "Session manager instance profile does not have proper role."
+  }
+
+  assert {
+    condition = resource.aws_iam_instance_profile.bastion_ssm_profile.role == resource.aws_iam_role.session_manager_role.name
+    error_message = "Bastion SSM instance profile does not have the proper role attached"
+  }
+} 
