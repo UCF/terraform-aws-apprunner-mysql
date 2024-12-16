@@ -9,6 +9,6 @@ output "github_access_role_arn" {
 }
 
 output "oidc_arn" {
-  value = module.github-oidc.oidc_provider_arn
+  value       = module.github-oidc.oidc_provider_arn
   description = "Github OIDC ARN"
 }

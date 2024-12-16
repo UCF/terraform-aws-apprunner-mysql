@@ -1,22 +1,32 @@
-data "aws_caller_identity" "current" {}
+######################################################################################
+# main.tf                                                                            #
+######################################################################################
+# IAM access policies, roles, etc. More information on access                        #
+# policies here:                                                                     #
+# https://docs.aws.amazon.com/apprunner/latest/dg/security_iam_service-with-iam.html #
+######################################################################################
+# AppRunner IAM                                                                      #
+######################################################################################
 
 data "aws_iam_policy_document" "apprunner_role_policy" {
   statement {
     principals {
-      type = "Service"
-      identifiers = ["build.apprunner.amazonaws.com"] 
+      type        = "Service"
+      identifiers = ["build.apprunner.amazonaws.com"]
     }
-    actions = ["sts:AssumeRole"]  
-    effect = "Allow"
+    actions = ["sts:AssumeRole"]
+    effect  = "Allow"
   }
 }
 
 resource "aws_iam_role" "apprunner_role" {
- name = "apprunner-access-role"
- assume_role_policy = data.aws_iam_policy_document.apprunner_role_policy.json 
+  name               = "apprunner-access-role"
+  assume_role_policy = data.aws_iam_policy_document.apprunner_role_policy.json
 }
 
-# More information on access policies at https://docs.aws.amazon.com/apprunner/latest/dg/security_iam_service-with-iam.html
+#####################################################################################
+# AppRunner and ECR                                                                 #
+#####################################################################################
 
 data "aws_iam_policy_document" "ecr_access_policy" {
   statement {
@@ -33,7 +43,7 @@ data "aws_iam_policy_document" "ecr_access_policy" {
 }
 
 resource "aws_iam_policy" "apprunner_ecr_access_policy" {
-  name = "apprunner-ecr-access-policy"
+  name   = "apprunner-ecr-access-policy"
   policy = data.aws_iam_policy_document.ecr_access_policy.json
 }
 
@@ -42,6 +52,10 @@ resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
   role       = aws_iam_role.apprunner_role.name
   policy_arn = aws_iam_policy.apprunner_ecr_access_policy.arn
 }
+
+######################################################################################
+# GitHub ECR Access                                                                  #
+######################################################################################
 
 resource "aws_iam_policy" "github_ecr_access" {
   name   = "GitHubECRAccess"
@@ -72,20 +86,20 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
-      type = "Federated"
+      type        = "Federated"
       identifiers = [module.github-oidc.oidc_provider_arn]
     }
     condition {
-      test = "StringLike"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values = ["repo:UCF/*:*"]
+      values   = ["repo:UCF/*:*"]
     }
   }
 }
 
 resource "aws_iam_role" "ecraccess_role" {
   name               = "GitHubAction-AssumeRoleWithAction"
-  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json 
+  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "ecraccess_attach" {
@@ -102,3 +116,40 @@ module "github-oidc" {
   repositories              = ["UCF/*"]
   oidc_role_attach_policies = ["${aws_iam_policy.github_ecr_access.arn}"]
 }
+
+######################################################################################
+# Bastion IAM                                                                        #
+######################################################################################
+
+data "aws_iam_policy_document" "session_manager_policy_document" {
+  statement {
+    principals {
+      type = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+    effect = "Allow"
+  }
+}
+
+data "aws_iam_policy_document" "ssm_start_policy_document" {
+  statement {
+    resources = ["*"]
+    actions = ["ssm:StartSession", "ssm:DescribeSession", "ssm:TerminateSession"]
+    effect = "Allow"
+  }
+} 
+
+resource "aws_iam_role" "session_manager_role" {
+  name = "bastion-session-manager-role"
+  assume_role_policy = data.aws_iam_policy_document.session_manager_policy_document.json
+}
+
+resource "aws_iam_role_policy_attachment" "session_manager_attachment" {
+  role = aws_iam_role.session_manager_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" 
+
+  depends_on = [aws_iam_role.session_manager_role]
+}
+
+ 
