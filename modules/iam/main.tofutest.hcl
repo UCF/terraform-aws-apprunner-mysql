@@ -32,7 +32,7 @@ run "apprunner_role_policy_document_has_correct_statement" {
 }
 
 run "apprunner_role_assumes_correct_role_policy" {
-                                                                                                                             
+
   assert {
     condition     = jsondecode(resource.aws_iam_role.apprunner_role.assume_role_policy) == jsondecode(data.aws_iam_policy_document.apprunner_role_policy.json)
     error_message = "AppRunner role does not assume correct role policy."
@@ -110,72 +110,72 @@ run "github_iam_has_correct_document_and_attachments" {
 
 run "bastion_iam_policy_document_has_correct_statement" {
   assert {
-    condition = contains([for principal in data.aws_iam_policy_document.session_manager_policy_document.statement[0].principals : principal.type], "Service") 
+    condition     = contains([for principal in data.aws_iam_policy_document.session_manager_policy_document.statement[0].principals : principal.type], "Service")
     error_message = "Bastion IAM Principal Type is not Service"
   }
- 
+
   assert {
-    condition = contains(flatten([for principal in data.aws_iam_policy_document.session_manager_policy_document.statement[0].principals : principal.identifiers]), "ec2.amazonaws.com")
+    condition     = contains(flatten([for principal in data.aws_iam_policy_document.session_manager_policy_document.statement[0].principals : principal.identifiers]), "ec2.amazonaws.com")
     error_message = "Bastion IAM Principal Identifier is not ec2.amazonaws.com."
   }
 
   assert {
-    condition = contains(data.aws_iam_policy_document.session_manager_policy_document.statement[0].actions, "sts:AssumeRole")
+    condition     = contains(data.aws_iam_policy_document.session_manager_policy_document.statement[0].actions, "sts:AssumeRole")
     error_message = "Bastion IAM Action is not sts:AssumeRole"
   }
 
   assert {
-    condition = data.aws_iam_policy_document.session_manager_policy_document.statement[0].effect == "Allow"
+    condition     = data.aws_iam_policy_document.session_manager_policy_document.statement[0].effect == "Allow"
     error_message = "Bastion IAM Effect is not Allow"
   }
 }
 
 run "bastion_iam_role_assumes_correct_policy_document" {
   assert {
-    condition = jsondecode(resource.aws_iam_role.session_manager_role.assume_role_policy) == jsondecode(data.aws_iam_policy_document.session_manager_policy_document.json)
+    condition     = jsondecode(resource.aws_iam_role.session_manager_role.assume_role_policy) == jsondecode(data.aws_iam_policy_document.session_manager_policy_document.json)
     error_message = "Bastion IAM role does not assume correct policy document"
   }
 }
- 
+
 run "bastion_role_has_policies_attached" {
   assert {
-    condition = resource.aws_iam_role_policy_attachment.session_manager_attachment.role == resource.aws_iam_role.session_manager_role.name
+    condition     = resource.aws_iam_role_policy_attachment.session_manager_attachment.role == resource.aws_iam_role.session_manager_role.name
     error_message = "Bastion IAM role policy attachment connected to correct role"
   }
 }
 
 run "ssm_start_policy_document_has_correct_statement" {
   assert {
-    condition = data.aws_iam_policy_document.ssm_start_policy_document.statement[0].effect == "Allow"
+    condition     = data.aws_iam_policy_document.ssm_start_policy_document.statement[0].effect == "Allow"
     error_message = "SSM Start Policy Document does not assume correct Effect, Allow"
   }
 
   assert {
-    condition = contains(data.aws_iam_policy_document.ssm_start_policy_document.statement[0].resources, "*")
+    condition     = contains(data.aws_iam_policy_document.ssm_start_policy_document.statement[0].resources, "*")
     error_message = "SSM Start Policy Document does not assume correct resource, *"
   }
 
   assert {
-    condition = sort(tolist(data.aws_iam_policy_document.ssm_start_policy_document.statement[0].actions)) == sort(tolist(["ssm:StartSession", "ssm:DescribeSession", "ssm:TerminateSession"]))
+    condition     = sort(tolist(data.aws_iam_policy_document.ssm_start_policy_document.statement[0].actions)) == sort(tolist(["ssm:StartSession", "ssm:DescribeSession", "ssm:TerminateSession"]))
     error_message = "SSM Start Policy Document does not assume correct actions"
   }
 }
 
 run "ssm_start_policy_has_proper_document_attached" {
   assert {
-    condition = jsondecode(resource.aws_iam_policy.ssm_start_policy.policy) == jsondecode(data.aws_iam_policy_document.ssm_start_policy_document.json)
+    condition     = jsondecode(resource.aws_iam_policy.ssm_start_policy.policy) == jsondecode(data.aws_iam_policy_document.ssm_start_policy_document.json)
     error_message = "SSM Start Policy does not have proper document attached"
   }
 }
- 
+
 run "session_manager_role_has_correct_policy_attached" {
   assert {
-    condition = resource.aws_iam_role_policy_attachment.attach_ssm_policy.role == resource.aws_iam_role.session_manager_role.name
+    condition     = resource.aws_iam_role_policy_attachment.attach_ssm_policy.role == resource.aws_iam_role.session_manager_role.name
     error_message = "Session manager role does not have the correct policy attached."
   }
 
   assert {
-    condition = resource.aws_iam_role_policy_attachment.attach_ssm_policy.policy_arn == resource.aws_iam_policy.ssm_start_policy.arn
+    condition     = resource.aws_iam_role_policy_attachment.attach_ssm_policy.policy_arn == resource.aws_iam_policy.ssm_start_policy.arn
     error_message = "Session manager role does not have the correct policy_arn to attach."
   }
 }
@@ -183,12 +183,12 @@ run "session_manager_role_has_correct_policy_attached" {
 run "instance_profiles_have_proper_roles" {
 
   assert {
-    condition = resource.aws_iam_instance_profile.session_manager_profile.role == resource.aws_iam_role.session_manager_role.name
+    condition     = resource.aws_iam_instance_profile.session_manager_profile.role == resource.aws_iam_role.session_manager_role.name
     error_message = "Session manager instance profile does not have proper role."
   }
 
   assert {
-    condition = resource.aws_iam_instance_profile.bastion_ssm_profile.role == resource.aws_iam_role.session_manager_role.name
+    condition     = resource.aws_iam_instance_profile.bastion_ssm_profile.role == resource.aws_iam_role.session_manager_role.name
     error_message = "Bastion SSM instance profile does not have the proper role attached"
   }
-} 
+}

@@ -108,13 +108,14 @@ resource "aws_iam_role_policy_attachment" "ecraccess_attach" {
 }
 
 module "github-oidc" {
-  source = "github.com/terraform-module/terraform-aws-github-oidc-provider"
+  source  = "terraform-module/github-oidc-provider/aws"
+  version = "~>1"
 
   create_oidc_provider = true
   create_oidc_role     = false
 
   repositories              = ["UCF/*"]
-  oidc_role_attach_policies = ["${aws_iam_policy.github_ecr_access.arn}"]
+  oidc_role_attach_policies = [aws_iam_policy.github_ecr_access.arn]
 }
 
 ######################################################################################
@@ -124,47 +125,47 @@ module "github-oidc" {
 data "aws_iam_policy_document" "session_manager_policy_document" {
   statement {
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
     }
     actions = ["sts:AssumeRole"]
-    effect = "Allow"
+    effect  = "Allow"
   }
 }
 
 data "aws_iam_policy_document" "ssm_start_policy_document" {
   statement {
     resources = ["*"]
-    actions = ["ssm:StartSession", "ssm:DescribeSession", "ssm:TerminateSession"]
-    effect = "Allow"
+    actions   = ["ssm:StartSession", "ssm:DescribeSession", "ssm:TerminateSession"]
+    effect    = "Allow"
   }
-} 
+}
 
 resource "aws_iam_role" "session_manager_role" {
-  name = "bastion-session-manager-role"
+  name               = "bastion-session-manager-role"
   assume_role_policy = data.aws_iam_policy_document.session_manager_policy_document.json
 }
 
 resource "aws_iam_role_policy_attachment" "session_manager_attachment" {
-  role = aws_iam_role.session_manager_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" 
+  role       = aws_iam_role.session_manager_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   depends_on = [aws_iam_role.session_manager_role]
 }
 
 resource "aws_iam_policy" "ssm_start_policy" {
-  name = "ssm-start-session-policy"
+  name        = "ssm-start-session-policy"
   description = "Policy to start SSM sessions"
-  policy = data.aws_iam_policy_document.ssm_start_policy_document.json 
-} 
+  policy      = data.aws_iam_policy_document.ssm_start_policy_document.json
+}
 
 resource "aws_iam_role_policy_attachment" "attach_ssm_policy" {
-  role = aws_iam_role.session_manager_role.name
+  role       = aws_iam_role.session_manager_role.name
   policy_arn = aws_iam_policy.ssm_start_policy.arn
 }
 
 resource "aws_iam_instance_profile" "session_manager_profile" {
-  name = "session-manager-profile"
-  role = aws_iam_role.session_manager_role.name
+  name       = "session-manager-profile"
+  role       = aws_iam_role.session_manager_role.name
   depends_on = [aws_iam_role.session_manager_role]
 }
 
