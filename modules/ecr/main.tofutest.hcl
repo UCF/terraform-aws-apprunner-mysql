@@ -10,6 +10,7 @@ variables {
 # A default image is added to ensure the AppRunner tests and spin-up work
 run "check_default_image_pushed_to_ecr" {
 
+  assert {
     # Ensure all ECR repositories exist
     condition     = alltrue([for repo_key in keys(null_resource.check_ecr_images) : length(fileset("/tmp", "ecr_image_check_${repo_key}.json")) > 0])
     error_message = "An ECR repository does not exist"
