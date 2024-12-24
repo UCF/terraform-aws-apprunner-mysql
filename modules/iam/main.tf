@@ -9,31 +9,28 @@
 # Github and ECR Access Policies                                  #
 ###################################################################
 
-resource "aws_iam_policy" "ecr_access_policy" {
+resource "aws_iam_policy" "github_ecr_access_policy" {
   name = "apprunner-ecr-access-policy"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:DescribeImages",
-          "ecr:GetAuthorizationToken",
-        ],
-        Resource = "*"
-      },
-    ]
-  })
+  policy = data.aws_iam_policy_document.github_ecr_access_policy.json
 }
 
+data "aws_iam_policy_document" "github_ecr_access_policy" {
+  statement {
+    resources = ["*"]
+    effect = "Allow"
+    actions = [
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage", 
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:DescribeImages",
+      "ecr:GetAuthorizationToken"
+    ]
+  }
+}
 
-resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
-  role       = aws_iam_role.apprunner_role.name
-  policy_arn = aws_iam_policy.ecr_access_policy.arn
+resource "aws_iam_role_policy_attachment" "github_ecr_policy_attach" {
+  role       = aws_iam_role.github_ecr_role.name
+  policy_arn = aws_iam_policy.github_ecr_access.arn
 }
 
 resource "aws_iam_policy" "github_ecr_access" {
@@ -71,18 +68,18 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:UCF/*:*"]
+      values   = var.github_actions_values
     }
   }
 }
 
-resource "aws_iam_role" "ecraccess_role" {
+resource "aws_iam_role" "github_ecr_role" {
   name               = "GitHubAction-AssumeRoleWithAction"
   assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "ecraccess_attach" {
-  role       = aws_iam_role.ecraccess_role.name
+resource "aws_iam_role_policy_attachment" "github_ecraccess_attach" {
+  role       = aws_iam_role.github_ecr_role.name
   policy_arn = aws_iam_policy.github_ecr_access.arn
 }
 
@@ -95,6 +92,20 @@ module "github-oidc" {
   repositories              = [var.github_oidc_repositories]
   oidc_role_attach_policies = [aws_iam_policy.github_ecr_access.arn]
 }
+
+data "aws_iam_policy_document" "ecr_access_policy" {
+  statement {
+    resources = ["*"]
+    actions = [
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage", 
+      "ecr:BatchCheckLayerAvailability", 
+      "ecr:DescribeImages",
+      "ecr:GetAuthorizationToken"
+    ]
+  }
+}
+
 
 ##############################################################
 # AppRunner access policies                                  #
@@ -116,4 +127,20 @@ data "aws_iam_policy_document" "apprunner_role_policy" {
       identifiers = ["build.apprunner.amazonaws.com"]
     }
   }
-} 
+}
+
+resource "aws_iam_policy" "apprunner_ecr_access_policy" {
+  policy = data.aws_iam_policy_document.apprunner_ecr_access_policy.json
+}
+
+data "aws_iam_policy_document" "apprunner_ecr_access_policy" {
+  statement {
+    actions = ["ecr:GetDownloadUrlForLayer"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
+  role = resource.aws_iam_role.apprunner_role.name
+  policy_arn = resource.aws_iam_policy.apprunner_ecr_access_policy.arn
+}

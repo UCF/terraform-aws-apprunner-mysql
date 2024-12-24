@@ -6,3 +6,7 @@ variable "region" {
 variable "github_oidc_repositories" {
   type = string
 }
+
+variable "github_actions_values" {
+  type = list(string)
+}

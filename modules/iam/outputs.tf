@@ -4,7 +4,7 @@ output "apprunner_access_role_arn" {
 }
 
 output "github_access_role_arn" {
-  value       = aws_iam_role.ecraccess_role.arn
+  value       = aws_iam_role.github_ecr_role.arn
   description = "The ARN of the ECR access IAM role"
 }
 
