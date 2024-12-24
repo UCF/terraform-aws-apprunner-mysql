@@ -1,0 +1,38 @@
+[
+  {
+    "name": "vitess",
+    "image": "vitess/vitess:latest",
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 3306,
+        "hostPort": 3306,
+        "protocol": "tcp"
+      },
+      {
+        "containerPort": 8080,
+        "hostPort": 8080,
+        "protocol": "tcp"
+      }
+    ],
+    "environment": [
+      {
+        "name": "VTCTLD_GRPC_PORT",
+        "value": "15999"
+      },
+      {
+        "name": "VTDATAROOT",
+        "value": "/vt/data"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/vitess",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
+
