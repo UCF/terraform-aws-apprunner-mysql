@@ -10,11 +10,11 @@
 ###################################################################
 
 resource "aws_iam_policy" "github_ecr_access_policy" {
-  name = "apprunner-ecr-access-policy"
-  policy = data.aws_iam_policy_document.github_ecr_access_policy.json
+  name = "github-ecr-access-policy"
+  policy = data.aws_iam_policy_document.github_ecr_get_image_policy.json
 }
 
-data "aws_iam_policy_document" "github_ecr_access_policy" {
+data "aws_iam_policy_document" "github_ecr_get_image_policy" {
   statement {
     resources = ["*"]
     effect = "Allow"
@@ -112,7 +112,7 @@ data "aws_iam_policy_document" "ecr_access_policy" {
 ##############################################################
 
 resource "aws_iam_role" "apprunner_role" {
-  name = "apprunner-access-role"
+  name = "apprunner-assume-role"
   assume_role_policy = data.aws_iam_policy_document.apprunner_role_policy.json
 }
 
@@ -135,7 +135,7 @@ resource "aws_iam_policy" "apprunner_ecr_access_policy" {
 
 data "aws_iam_policy_document" "apprunner_ecr_access_policy" {
   statement {
-    actions = ["ecr:GetDownloadUrlForLayer"]
+    actions = ["sts:AssumeRole"]
     resources = ["*"]
   }
 }
@@ -144,3 +144,20 @@ resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
   role = resource.aws_iam_role.apprunner_role.name
   policy_arn = resource.aws_iam_policy.apprunner_ecr_access_policy.arn
 }
+
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name = "ecsTaskExecutionRole"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_execution.json
+}
+
+data "aws_iam_policy_document" "ecs_task_execution" {
+  statement {
+    principals {
+      type = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+

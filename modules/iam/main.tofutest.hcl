@@ -97,3 +97,34 @@ run "github_iam_has_correct_document_and_attachments" {
   }
 }
 
+#####################################################################
+# ECS IAM Tests                                                     #
+#####################################################################
+
+run "ecs_iam_role_has_correct_name_and_policy" {
+  assert {
+    condition = resource.aws_iam_role.ecs_task_execution_role.name == "ecsTaskExecutionRole"
+    error_message = "ECS IAM role does not have correct name"
+  }
+
+  assert {
+    condition = jsondecode(resource.aws_iam_role.ecs_task_execution_role.assume_role_policy) == jsondecode(data.aws_iam_policy_document.ecs_task_execution.json)
+    error_message = "ECS IAM policy does not have correct data."
+  }
+
+  assert {
+    condition = contains(data.aws_iam_policy_document.ecs_task_execution.statement[0].actions, "sts:AssumeRole")
+    error_message = "ECS IAM Policy Document does not have correct actions."
+  }
+  
+  assert {
+    condition     = contains([for principal in data.aws_iam_policy_document.ecs_task_execution.statement[0].principals : principal.type], "Service")
+    error_message = "Apprunner Role Principal Type is not Service"
+  }
+
+  assert {
+    condition     = contains(flatten([for principal in data.aws_iam_policy_document.ecs_task_execution.statement[0].principals : principal.identifiers]), "ecs-tasks.amazonaws.com")
+    error_message = "Apprunner Role Principal identifier is not build.apprunner.amazonaws.com"
+  }
+
+}
