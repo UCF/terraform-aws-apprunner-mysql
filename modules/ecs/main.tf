@@ -22,23 +22,36 @@ data "aws_iam_policy_document" "ecs_task_execution" {
   }
 }
 
-
 ####################################################################
 # ECS                                             							   #
 ####################################################################
 
 resource "aws_ecs_cluster" "vitess_cluster" {
   name = "vitess-cluster"
+  
+  configuration {
+    execute_command_configuration {
+      log_configuration {
+        cloud_watch_encryption_enabled = true
+        cloud_watch_log_group_name = aws_cloudwatch_log_group.vitess.name
+      }
+      logging = "OVERRIDE"
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_group" "vitess" {
+  name = "vitess"
 }
 
 resource "aws_ecs_task_definition" "vitess_task" {
- family = "vitess-task"
- requires_compatibilities = ["FARGATE"]
- network_mode = "awsvpc"
- cpu = "1024"
- memory = "2048"
- execution_role_arn = resource.aws_iam_role.ecs_task_execution_role.arn
- container_definitions = data.local_file.vitess_container_definition.content
+  family = "vitess-task"
+  requires_compatibilities = ["FARGATE"]
+  network_mode = "awsvpc"
+  cpu = "1024"
+  memory = "2048"
+  execution_role_arn = resource.aws_iam_role.ecs_task_execution_role.arn
+  container_definitions = data.local_file.vitess_container_definition.content 
 }
 
 data "local_file" "vitess_container_definition" {

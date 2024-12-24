@@ -51,6 +51,17 @@ run "ecs_cluster_is_set_up" {
     condition     = resource.aws_ecs_cluster.vitess_cluster.name == "vitess-cluster"
     error_message = "AWS ECS Cluster named `vitess_cluster` not found."
   }
+
+  assert { 
+    condition = resource.aws_ecs_cluster.vitess_cluster.configuration[0].execute_command_configuration[0].log_configuration[0].cloud_watch_encryption_enabled == true
+    error_message = "ECS Cluster CloudWatch Encryption not enabled"
+  }
+
+  assert { 
+    condition = resource.aws_ecs_cluster.vitess_cluster.configuration[0].execute_command_configuration[0].log_configuration[0].cloud_watch_log_group_name == resource.aws_cloudwatch_log_group.vitess.name
+    error_message = "CloudWatch Log Group not connected to ECS Cluster"
+  }
+
 }
 
 run "aws_ecs_vitess_task_definition_is_set_up" {
