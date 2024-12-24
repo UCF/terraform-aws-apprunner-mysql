@@ -30,6 +30,5 @@ run "test5by3" {
     condition     = alltrue([for repo_key in keys(null_resource.check_ecr_images) : null_resource.check_ecr_images[repo_key].id != ""])
     error_message = "The container image was not pushed to ECR successfully"
   }
-
-  }
 }
+
