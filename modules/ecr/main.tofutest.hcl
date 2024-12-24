@@ -31,6 +31,5 @@ run "test5by3" {
     error_message = "The container image was not pushed to ECR successfully"
   }
 
-    error_message = "Incorrect ECR repository names."
   }
 }
