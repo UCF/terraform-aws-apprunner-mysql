@@ -154,3 +154,4 @@ run "aws_ecs_vitess_service_is_set_up" {
     error_message = "Vitess Service will not wait for steady state before continuing."
   }
 }
+

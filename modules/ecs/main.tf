@@ -119,3 +119,10 @@ data "aws_ecs_task" "vitess_task" {
   cluster = aws_ecs_service.vitess_service.cluster_id
   task_id = aws_ecs_service.vitess_service.task_definition
 }
+
+resource "mysql_database" "databases" {
+  for_each = { for idx, combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
+  name     = each.key
+
+  depends_on = [aws_ecs_service.vitess]
+}

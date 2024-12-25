@@ -145,23 +145,4 @@ resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
   policy_arn = resource.aws_iam_policy.apprunner_ecr_access_policy.arn
 }
 
-####################################################################
-# ECS IAM                                                          #
-####################################################################
-
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecsTaskExecutionRole"
-  assume_role_policy = data.aws_iam_policy_document.ecs_task_execution.json
-}
-
-data "aws_iam_policy_document" "ecs_task_execution" {
-  statement {
-    principals {
-      type = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
-
 
