@@ -20,9 +20,31 @@ resource "aws_subnet" "vitess" {
 }
 
 resource "aws_security_group" "vitess" {
+  name = "vitess-security-group"
+  description = "Allow inbound traffic Vitess services"
   vpc_id = resource.aws_vpc.main.id
 }
 
+resource "aws_security_group" "apprunner" {
+  name = "apprunner-security-group"
+  vpc_id = resource.aws_vpc.main.id
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group_rule" "apprunner_to_vitess" {
+  type = "ingress"
+  from_port = 15999
+  to_port = 15999
+  protocol = "tcp"
+  security_group_id = aws_security_group.vitess.id
+  source_security_group_id = aws_security_group.apprunner.id
+}
 
 ###########################################################################
 # ECS IAM - included here instead of iam module for testability purposes  #

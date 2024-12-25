@@ -21,13 +21,26 @@ run "private_subnets_are_created" {
   }
 }
 
-run "security_group_in_vpc" {
+run "vitess_security_group_in_vpc" {
   assert {
     condition = resource.aws_security_group.vitess.vpc_id == resource.aws_vpc.main.id
-    error_message = "Security group not in VPC"
+    error_message = "Vitess security group not in VPC"
   }
 }
 
+run "apprunner_security_group_in_vpc" {
+  assert {
+    condition = resource.aws_security_group.apprunner.vpc_id == resource.aws_vpc.main.id
+    error_message = "AppRunner security group not in VPC"
+  }
+}
+
+run "apprunner_sg_has_ingress_from_vitess_sg" {
+  assert {
+    condition = resource.aws_security_group_rule.apprunner_to_vitess.security_group_id == resource.aws_security_group.vitess.id && resource.aws_security_group_rule.apprunner_to_vitess.source_security_group_id == resource.aws_security_group.apprunner.id
+    error_message = "AppRunner security group does not have ingress from vitess security group"
+  }
+}
 
 #####################################################################
 # ECS IAM Tests                                                     #
