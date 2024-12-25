@@ -114,3 +114,8 @@ resource "aws_ecs_service" "vitess" {
       assign_public_ip = false
   }
 }
+
+data "aws_ecs_task" "vitess_task" {
+  cluster = aws_ecs_service.vitess_service.cluster_id
+  task_id = aws_ecs_service.vitess_service.task_definition
+}
