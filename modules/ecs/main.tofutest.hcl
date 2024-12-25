@@ -11,6 +11,25 @@ variables {
 }
 
 #####################################################################
+# VPC Tests                                                         #
+#####################################################################
+
+run "private_subnets_are_created" {
+  assert {
+    condition = resource.aws_subnet.vitess.map_public_ip_on_launch == false 
+    error_message = "Subnet not mapped to private IP on launch"
+  }
+}
+
+run "security_group_in_vpc" {
+  assert {
+    condition = resource.aws_security_group.vitess.vpc_id == resource.aws_vpc.main.id
+    error_message = "Security group not in VPC"
+  }
+}
+
+
+#####################################################################
 # ECS IAM Tests                                                     #
 #####################################################################
 
@@ -93,5 +112,32 @@ run "aws_ecs_vitess_task_definition_is_set_up" {
   assert {
     condition = resource.aws_ecs_task_definition.vitess_task.container_definitions != ""
     error_message = "Vitess task container definitions must be set, preferably with container_definitions data source."
+  }
+}
+
+run "aws_ecs_vitess_service_is_set_up" {
+  assert {
+    condition = resource.aws_ecs_service.vitess.name == "vitess-service"
+    error_message = "Vitess Service incorrectly named or service not created."
+  }
+
+  assert {
+    condition = resource.aws_ecs_service.vitess.cluster == resource.aws_ecs_cluster.vitess_cluster.id
+    error_message = "Vitess Cluster incorrectly connected."
+  }
+
+  assert {
+    condition = resource.aws_ecs_service.vitess.task_definition == aws_ecs_task_definition.vitess_task.arn
+    error_message = "Vitess Task Definition incorrectly connected."
+  }
+
+  assert {
+    condition = resource.aws_ecs_service.vitess.launch_type == "FARGATE"
+    error_message = "Vitess Launch Type not FARGATE."
+  }
+  
+  assert { 
+    condition = resource.aws_ecs_service.vitess.wait_for_steady_state == true
+    error_message = "Vitess Service will not wait for steady state before continuing."
   }
 }

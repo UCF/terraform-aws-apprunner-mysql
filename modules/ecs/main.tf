@@ -3,6 +3,27 @@
 ###########################################################################
 # Creates necessary AWS infrastructure for a Vitess ECS cluster           #
 ###########################################################################
+
+###########################################################################
+# VPC                                                                     #
+###########################################################################
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  enable_dns_support = true
+  enable_dns_hostnames = true
+}
+
+resource "aws_subnet" "vitess" {
+  vpc_id = resource.aws_vpc.main.id
+  cidr_block = "10.0.0.0/24"
+}
+
+resource "aws_security_group" "vitess" {
+  vpc_id = resource.aws_vpc.main.id
+}
+
+
 ###########################################################################
 # ECS IAM - included here instead of iam module for testability purposes  #
 ###########################################################################
@@ -22,9 +43,9 @@ data "aws_iam_policy_document" "ecs_task_execution" {
   }
 }
 
-####################################################################
-# ECS                                             							   #
-####################################################################
+##########################################################################
+# ECS                                                   							   #
+##########################################################################
 
 resource "aws_ecs_cluster" "vitess_cluster" {
   name = "vitess-cluster"
@@ -56,4 +77,18 @@ resource "aws_ecs_task_definition" "vitess_task" {
 
 data "local_file" "vitess_container_definition" {
   filename = "${path.module}/task-definitions/vitess_container_definition.json"
+}
+
+resource "aws_ecs_service" "vitess" {
+  name = "vitess-service" 
+  cluster = resource.aws_ecs_cluster.vitess_cluster.id
+  task_definition = resource.aws_ecs_task_definition.vitess_task.arn
+  launch_type = "FARGATE"
+  wait_for_steady_state = true
+
+  network_configuration {
+      subnets = [resource.aws_subnet.vitess.id]
+      security_groups = [resource.aws_security_group.vitess.id]
+      assign_public_ip = false
+  }
 }
