@@ -5,6 +5,8 @@
 # https://docs.aws.amazon.com/apprunner/latest/dg/security_iam_service-with-iam.html #
 ######################################################################################
 
+data "aws_caller_identity" "current" {}
+
 ###################################################################
 # Github and ECR Access Policies                                  #
 ###################################################################
@@ -129,6 +131,26 @@ data "aws_iam_policy_document" "apprunner_role_policy" {
   }
 }
 
+# Policy for ECR access (allow AppRunner to pull images from ECR)
+resource "aws_iam_role_policy" "apprunner_permissions_policy" {
+  role = aws_iam_role.apprunner_role.name
+  policy = data.aws_iam_policy_document.apprunner_permissions_policy.json
+}
+
+data "aws_iam_policy_document" "apprunner_permissions_policy" {
+  statement {
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchGetImage",
+      "ecr:BatchCheckLayerAvailability",
+    ]
+    resources = [
+      "arn:aws:ecr:${var.region}:${data.aws_caller_identity.current.account_id}:repository/*"
+    ]
+  }
+}
+
+# Policy for AppRunner to interact with ECR
 resource "aws_iam_policy" "apprunner_ecr_access_policy" {
   policy = data.aws_iam_policy_document.apprunner_ecr_access_policy.json
 }
@@ -140,6 +162,7 @@ data "aws_iam_policy_document" "apprunner_ecr_access_policy" {
   }
 }
 
+# Attach ECR acess policy to AppRunner role
 resource "aws_iam_role_policy_attachment" "apprunner_ecr_policy_attach" {
   role = resource.aws_iam_role.apprunner_role.name
   policy_arn = resource.aws_iam_policy.apprunner_ecr_access_policy.arn

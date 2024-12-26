@@ -3,8 +3,7 @@ provider "aws" {
 }
 
 provider "mysql" {
-  host = "${data.aws_ecs_task.vitess_test.network_interface[0].private_ip}"
+  endpoint = "${data.aws_network_interface.task_eni.private_ip}:15999" 
   username = "admin"
   password = var.adminpw
-  port = 15999
 }

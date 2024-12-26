@@ -10,3 +10,7 @@ variable "github_oidc_repositories" {
 variable "github_actions_values" {
   type = list(string)
 }
+
+variable "ecr_repositories" {
+  type = list(string)
+}

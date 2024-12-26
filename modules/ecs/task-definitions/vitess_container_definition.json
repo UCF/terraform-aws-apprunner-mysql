@@ -2,7 +2,8 @@
   {
     "name": "vitess",
     "image": "vitess/vitess:latest",
-    "essential": true,
+    "cpu": 1024,
+    "memory": 2048,
     "portMappings": [
       {
         "containerPort": 3306,
@@ -15,14 +16,15 @@
         "protocol": "tcp"
       }
     ],
+    "essential": true,
     "environment": [
-      {
-        "name": "VTCTLD_GRPC_PORT",
-        "value": "15999"
-      },
       {
         "name": "VTDATAROOT",
         "value": "/vt/data"
+      },
+      {
+        "name": "VTCTLD_GRPC_PORT",
+        "value": "15999"
       }
     ],
     "logConfiguration": {
