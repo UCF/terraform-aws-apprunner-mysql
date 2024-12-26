@@ -1,8 +1,16 @@
-provider "aws" {
-  region = var.region 
-}
+#######################
+# main.tf             #
+#######################
+
+###########################################
+# Current account data                    #
+###########################################
 
 data "aws_caller_identity" "current" {}
+
+###########################################
+# AppRunner services                      #
+###########################################
 
 resource "aws_apprunner_service" "app_services" {
   for_each = toset(var.ecr_repo_names)
@@ -14,12 +22,12 @@ resource "aws_apprunner_service" "app_services" {
       image_configuration {
         port = "80"
       }
-      image_identifier      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value}:${var.ecr_timestamp}"
+      image_identifier      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/${each.value}:latest"
       image_repository_type = "ECR"
     }
 
     authentication_configuration {
-      access_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/apprunner-assume-role"
+      access_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/apprunner-access-role"
     }
   }
 
@@ -37,10 +45,6 @@ resource "aws_apprunner_auto_scaling_configuration_version" "app_scaling" {
   max_concurrency = 100
   max_size        = 3
   min_size        = 1
-}
-
-locals {
-  app_env_map = { for combo in var.app_env_list : "${combo.app}-${combo.env}" => combo }
 }
 
 resource "aws_apprunner_custom_domain_association" "domains" {
