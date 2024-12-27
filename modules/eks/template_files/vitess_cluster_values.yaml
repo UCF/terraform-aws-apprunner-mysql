@@ -1,0 +1,12 @@
+global:
+  clusterDomain: vitess-cluster.local
+  topology:
+    region: us-east-1
+    cell: east
+vtgate:
+  replicas: 2
+vttablet:
+  replicas: 3
+vtctld:
+  replicas: 1
+

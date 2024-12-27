@@ -1,0 +1,63 @@
+#####################################################################
+# main.tofutest.hcl                                                 #
+#####################################################################
+# Tests for Vitess EKS Cluster                                      #
+# ----------------------------                                      #
+# To run these tests, you must apply the eks module and input the   #
+# three vitess_cluster_* outputs into the variables below           #
+#####################################################################
+
+variables {
+  applications = ["announcements", "template"]
+  environments = ["dev", "test"]
+  app_env_list = [
+    { app = "announcements", env = "dev" },
+    { app = "announcements", env = "test" },
+    { app = "template", env = "dev" },
+    { app = "template", env = "test" },
+  ]
+  passwords        = ["anndev", "anntest", "tempdev", "temptest"]
+  ecr_repositories = ["announcements-dev", "announcements-test", "template-dev", "template-test"]
+  vitess_cluster_host = 
+  vitess_cluster_token = 
+  vitess_cluster_ca_certificate = 
+}
+
+#######################################################################
+# Vitess Operator                                                     #
+#######################################################################
+
+run "vitess_operator_was_created" {
+  assert {
+    # Check that the pod creation result file exists and contains the expected output
+    condition     = kubernetes_manifest.vitess_operator.manifest == yamldecode(file("vitess_config/operator.yaml")) && fileexists("/tmp/pod_check_result.txt")
+    error_message = "Vitess operator creation verification failed."
+  }
+}
+
+run "vitess_operator_manifests_exist" {
+  assert {
+    condition = [for manifest in kubernetes_manifest.vitess_operator.manifest : manifest == yamldecode(trimspace(local.vitess_operator_yaml_docs))]
+    error_message = "At least one Vitess Operator manifest does not exist."
+  }
+}
+
+#######################################################################
+# Database Tests                                                      #
+#######################################################################
+
+#run "null_resource_runs" {
+#  assert {
+#    condition     = alltrue([for key, resource in resource.null_resource.create_databases : resource.id != ""])
+#    error_message = "Database creation command failed."
+#  }
+#}
+#
+#
+#run "check_database_creation" {
+#  assert {
+#    # Check that the database creation result file exists and contains the expected output
+#    condition     = alltrue([for combo in var.app_env_list : fileexists("/tmp/db_check_${combo.app}_${combo.env}.txt") && length(fileset("/tmp", "db_check_${combo.app}_${combo.env}.txt")) > 0])
+#    error_message = "Database creation verification failed for one or more environments."
+#  }
+#}

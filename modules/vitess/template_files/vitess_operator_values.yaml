@@ -1,0 +1,8 @@
+operator:
+  image:
+    repository: vitess/vitess-operator
+    tag: v2.7.1
+  serviceAccount:
+    create: true
+    name: vitess-operator
+
