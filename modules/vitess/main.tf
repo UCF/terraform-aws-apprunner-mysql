@@ -34,7 +34,7 @@ resource "null_resource" "wait_for_eks" {
 resource "kubernetes_manifest" "vitess_operator" {
   for_each = local.vitess_operator_yaml_docs
   manifest = yamldecode(trimspace(each.value))
-  depends_on = [aws_eks_cluster.vitess_cluster, null_resource.wait_for_eks]
+  depends_on = [null_resource.wait_for_eks]
 }
 
 resource "null_resource" "check_vitess_operator_pod_exists" {

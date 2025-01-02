@@ -22,3 +22,15 @@ variable "ecr_repositories" {
 variable "passwords" {
   type = list(string)
 }
+
+variable "vitess_cluster_host" {
+  type = string
+}
+
+variable "vitess_cluster_token" {
+  type = string
+}
+
+variable "vitess_cluster_ca_certificate" {
+  type = string
+}

@@ -1,11 +1,23 @@
-#####################################################################
-# main.tofutest.hcl                                                 #
-#####################################################################
-# Tests for Vitess EKS Cluster                                      #
-# ----------------------------                                      #
-# To run these tests, you must apply the eks module and input the   #
-# three vitess_cluster_* outputs into the variables below           #
-#####################################################################
+############################################################################
+# main.tofutest.hcl                                                        #
+############################################################################
+# Tests for Vitess EKS Cluster                                             #
+# ----------------------------                                             #
+# Prerequisites:                                                           #
+#   To run these tests, you must                                           #
+#       - add "apply" to the mock_outputs_allowed_terraform_commands list  #
+#            in the eks module's terragrunt.hcl file                       # 
+#       - terragrunt apply the eks module (not tofu apply)                 #
+#       - input the four vitess_cluster_* outputs into variables below     #
+# ---------------------------                                              #
+# Cleanup:                                                                 #
+#   To clean up after testing, you must                                    #
+#       -  add "destroy" to the mock_outputs_allowed_terraform_comands     #
+#            list in the eks module's terragrunt.hcl                       #
+#       -  replace the four vitess_cluster_* outputs with defaults         #
+#       -  terragrunt destroy the eks modules  (not tofu destroy)          #
+#       -  remove "apply" and "destroy" from the allowed commands list     #
+############################################################################
 
 variables {
   applications = ["announcements", "template"]
