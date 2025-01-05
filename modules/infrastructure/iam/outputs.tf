@@ -12,3 +12,7 @@ output "oidc_arn" {
   value       = module.github-oidc.oidc_provider_arn
   description = "Github OIDC ARN"
 }
+
+output "bastion_ssm_profile" {
+  value = aws_iam_instance_profile.bastion_ssm_profile.id
+}

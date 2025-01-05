@@ -21,7 +21,7 @@ resource "aws_db_instance" "default" {
   identifier        = "cm-appfolio-db"
   allocated_storage = 20
   engine            = "mysql"
-  engine_version    = "8.0.32"
+  engine_version    = "8.0.35"
   instance_class    = "db.t3.micro"
   username          = "admin"
   password          = var.is_tofu_test ? local.tofutestpw : var.instance_pw
@@ -80,7 +80,7 @@ resource "aws_instance" "bastion" {
   instance_type               = "t3.micro"
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = [var.bastion_sg_id]
-  iam_instance_profile        = aws_iam_instance_profile.session_manager_profile.id
+  iam_instance_profile        = var.bastion_ssm_profile
 
   tags = {
     Name = "BastionHost"

@@ -13,10 +13,3 @@ remote_state = {
     }
 }
 
-terraform {
-  after_hook "show_outputs" {
-    commands = ["run-all apply"]
-    execute = ["terragrunt", "run-all", "output"]
-    run_on_error = true
-  }
-}

@@ -38,10 +38,6 @@ dependency "iam" {
   skip_outputs = true
 }
 
-dependency "mysql" {
-  config_path = "../mysql"
-  skip_outputs = true
-}
 
 inputs = {
   ecr_repo_names = dependency.ecr.outputs.ecr_repo_names

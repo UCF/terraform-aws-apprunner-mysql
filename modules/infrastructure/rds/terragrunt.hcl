@@ -30,10 +30,15 @@ dependency "vpc" {
   }
 }
 
+dependency "iam" {
+  config_path = "../iam"
+}
+
 inputs = {
   app_env_list = dependency.appenvlist.outputs.app_env_list
   rds_secgrp_id = dependency.vpc.outputs.rds_secgrp_id 
   db_sg_name = dependency.vpc.outputs.db_sg_name
   bastion_sg_id = dependency.vpc.outputs.bastion_sg_id
   subnet_id = dependency.vpc.outputs.subnet_id
+  bastion_ssm_profile = dependency.iam.outputs.bastion_ssm_profile
 }

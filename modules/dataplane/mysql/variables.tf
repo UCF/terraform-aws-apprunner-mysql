@@ -33,14 +33,11 @@ variable "instance_pw" {
   description = "The main password for the database instance"
 }
 
-variable "passwords" {
+variable "app_db_passwords" {
   type        = list(string)
   description = "The passwords for each database"
 }
 
-variable "bastion_instance_id" {
-  type = string
-}
 
 variable "rds_endpoint" {
   type = string
